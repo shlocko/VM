@@ -1,0 +1,64 @@
+use crate::bytecode::Bytecode;
+use crate::memory::Stack;
+use crate::opcode::OpCode;
+use crate::value::Value;
+
+pub struct VM {
+    stack: Stack,
+    consts: Vec<Value>,
+    code: Vec<u8>,
+    ip: usize,
+}
+
+impl VM {
+    pub fn new(max_stack_size: usize) -> Self {
+        Self {
+            stack: Stack::new(max_stack_size),
+            consts: Vec::new(),
+            code: Vec::new(),
+            ip: 0,
+        }
+    }
+    pub fn load_code(&mut self, bytecode: Bytecode) {
+        self.code = bytecode.code;
+        self.consts = bytecode.consts;
+    }
+    pub fn execute(&mut self) -> Result<bool, String> {
+        loop {
+            let opcode = OpCode::try_from(self.code[self.ip])?;
+            println!("Test, {}, {:?}, {:?}", self.ip, self.stack, opcode);
+            match opcode {
+                // Arithmetic
+                OpCode::Add => {
+                    let lop = self.stack.pop();
+                    let rop = self.stack.pop();
+                    println!("stack after pops: {:?}", self.stack);
+                    match (lop, rop) {
+                        (Some(Value::Int(l)), Some(Value::Int(r))) => {
+                            println!("add: {} + {} = {}", l, r, l + r);
+                        }
+                        _ => {
+                            println!("Wrong values");
+                        }
+                    }
+                    self.ip += 1;
+                }
+
+                // Memory/Stack Manipulation
+                OpCode::PushConst => {
+                    let val = self.code[self.ip + 1];
+                    self.stack.push(Value::Int(val as i64));
+
+                    self.ip += 2;
+                }
+                _ => {
+                    panic!("Invalid opcode")
+                }
+            }
+            if self.ip >= self.code.len() {
+                break;
+            }
+        }
+        Ok(true)
+    }
+}
