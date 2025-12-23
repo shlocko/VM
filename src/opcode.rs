@@ -10,9 +10,21 @@ pub enum OpCode {
 
     // Memory/Stack Manipulation
     PushConst = 0x10,
-    PushVar = 0x11,
-    StoreVar = 0x12,
-    Pop = 0x13,
+    PushLocal = 0x11,
+    StoreLocal = 0x12,
+    PushGlobal = 0x13,
+    StoreGlobal = 0x14,
+    Pop = 0x15,
+}
+
+impl OpCode {
+    // Return a vector whose values are the sizes, in bytes, of the args the opcode accepts
+    pub fn arg_sizecount(&self) -> Vec<usize> {
+        match self {
+            OpCode::PushConst => vec![2],
+            _ => vec![0],
+        }
+    }
 }
 
 // Safe conversion from u8
@@ -30,9 +42,11 @@ impl TryFrom<u8> for OpCode {
 
             // Memory/Stack Manipulation
             0x10 => Ok(OpCode::PushConst),
-            0x11 => Ok(OpCode::PushVar),
-            0x12 => Ok(OpCode::StoreVar),
-            0x13 => Ok(OpCode::Pop),
+            0x11 => Ok(OpCode::PushLocal),
+            0x12 => Ok(OpCode::StoreLocal),
+            0x13 => Ok(OpCode::PushGlobal),
+            0x14 => Ok(OpCode::StoreGlobal),
+            0x15 => Ok(OpCode::Pop),
             _ => Err(format!("Invalid opcode: {:#x}", value)),
         }
     }
