@@ -14,6 +14,7 @@ fn main() {
     let bytecode = Bytecode {
         consts: vec![Value::Int(3), Value::Int(2)],
         code: vec![0x10, arg1[0], arg1[1], 0x10, arg2[0], arg2[1], 0x00],
+        // code: vec![0x10, 0x00, 0x00, 0x10, 0x01, 0x00, 0x00], // handcoded arguments in LE
     };
 
     let mut vm = VM::new(256);

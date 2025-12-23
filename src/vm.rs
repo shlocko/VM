@@ -26,7 +26,8 @@ impl VM {
     pub fn execute(&mut self) -> Result<bool, String> {
         loop {
             let opcode = OpCode::try_from(self.code[self.ip])?;
-            println!("Test, {}, {:?}, {:?}", self.ip, self.stack, opcode);
+            // println!("Test, {}, {:?}, {:?}", self.ip, self.stack, opcode);
+            println!("Stack before {:?}: {:?}", opcode, self.stack);
             match opcode {
                 // Arithmetic
                 OpCode::Add => {
@@ -35,7 +36,9 @@ impl VM {
                     println!("stack after pops: {:?}", self.stack);
                     match (lop, rop) {
                         (Some(Value::Int(l)), Some(Value::Int(r))) => {
-                            println!("add: {} + {} = {}", l, r, l + r);
+                            let result = l + r;
+                            self.stack.push(Value::Int(result));
+                            println!("add: {} + {} = {}", l, r, result);
                         }
                         _ => {
                             println!("Wrong values");
@@ -61,6 +64,7 @@ impl VM {
                     panic!("Invalid opcode")
                 }
             }
+            println!("Stack after {:?}: {:?}", opcode, self.stack);
             if self.ip >= self.code.len() {
                 break;
             }
