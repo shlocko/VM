@@ -46,10 +46,16 @@ impl VM {
 
                 // Memory/Stack Manipulation
                 OpCode::PushConst => {
-                    let val = self.code[self.ip + 1];
-                    self.stack.push(Value::Int(val as i64));
+                    // Read arg from bytes encoded as 2 LE bytes
+                    let val = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                    // Push const at location indicated by arg to stack
+                    self.stack.push(self.consts[val as usize]);
 
-                    self.ip += 2;
+                    // Increment IP by the number of bytes in opcode
+                    for num in opcode.arg_sizecount() {
+                        self.ip += num;
+                    }
+                    self.ip += 1;
                 }
                 _ => {
                     panic!("Invalid opcode")
