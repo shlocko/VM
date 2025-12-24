@@ -60,6 +60,12 @@ impl VM {
                     }
                     self.ip += 1;
                 }
+                OpCode::PushImmediate => {
+                    let val = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+
+                    self.stack.push(Value::Int(val as i64));
+                    self.ip += 3;
+                }
                 _ => {
                     panic!("Invalid opcode")
                 }

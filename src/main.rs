@@ -1,6 +1,8 @@
 mod bytecode;
+mod error;
 mod memory;
 mod opcode;
+mod utils;
 mod value;
 mod vm;
 

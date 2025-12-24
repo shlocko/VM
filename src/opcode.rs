@@ -15,6 +15,7 @@ pub enum OpCode {
     PushGlobal = 0x13,
     StoreGlobal = 0x14,
     Pop = 0x15,
+    PushImmediate = 0x16,
 }
 
 impl OpCode {
@@ -22,6 +23,7 @@ impl OpCode {
     pub fn arg_sizecount(&self) -> Vec<usize> {
         match self {
             OpCode::PushConst => vec![2],
+            OpCode::PushImmediate => vec![2],
             _ => vec![0],
         }
     }
@@ -47,6 +49,7 @@ impl TryFrom<u8> for OpCode {
             0x13 => Ok(OpCode::PushGlobal),
             0x14 => Ok(OpCode::StoreGlobal),
             0x15 => Ok(OpCode::Pop),
+            0x16 => Ok(OpCode::PushImmediate),
             _ => Err(format!("Invalid opcode: {:#x}", value)),
         }
     }
