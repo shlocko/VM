@@ -6,6 +6,7 @@ use crate::value::Value;
 pub struct VM {
     stack: Stack,
     consts: Vec<Value>,
+    globals: Vec<Value>,
     code: Vec<u8>,
     ip: usize,
 }
@@ -15,6 +16,7 @@ impl VM {
         Self {
             stack: Stack::new(max_stack_size),
             consts: Vec::new(),
+            globals: Vec::new(),
             code: Vec::new(),
             ip: 0,
         }
@@ -30,7 +32,7 @@ impl VM {
             println!("Stack before {:?}: {:?}", opcode, self.stack);
             match opcode {
                 // Arithmetic
-                OpCode::Add => {
+                OpCode::AddInt => {
                     let lop = self.stack.pop();
                     let rop = self.stack.pop();
                     println!("stack after pops: {:?}", self.stack);
@@ -65,6 +67,15 @@ impl VM {
 
                     self.stack.push(Value::Int(val as i64));
                     self.ip += 3;
+                }
+                OpCode::PushGlobal => {
+                    let global_idx =
+                        u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                    self.stack.push(self.globals[global_idx as usize]);
+                    self.ip += 3;
+                }
+                OpCode::StoreGlobal => {
+                    let val = self.stack.pop();
                 }
                 _ => {
                     panic!("Invalid opcode")

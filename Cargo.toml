@@ -3,4 +3,12 @@ name = "vm"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "fvm"
+path = "src/lib.rs"
+
+[[bin]]
+name = "fvm"  # The executable name
+path = "src/main.rs"
+
 [dependencies]
