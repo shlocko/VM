@@ -12,7 +12,15 @@ fn main() {
             let code = vec.1;
             let bytecode = Bytecode { consts, code };
             vm.load_code(bytecode);
-            _ = vm.execute();
+            let result = vm.execute();
+            match result {
+                Ok(_) => {
+                    println!("VM Returned OK.");
+                }
+                Err(e) => {
+                    println!("VM Returned Error: {:?}", e);
+                }
+            }
         }
         Err(er) => {
             println!("Error {:?}", er);

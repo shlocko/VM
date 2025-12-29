@@ -1,3 +1,5 @@
+use crate::error::VMError;
+
 #[repr(u8)]
 #[derive(Debug, Copy, Clone)]
 pub enum OpCode {
@@ -38,7 +40,7 @@ impl OpCode {
 
 // Safe conversion from u8
 impl TryFrom<u8> for OpCode {
-    type Error = String;
+    type Error = VMError;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
@@ -63,7 +65,7 @@ impl TryFrom<u8> for OpCode {
 
             // Testing
             0xF5 => Ok(OpCode::Print),
-            _ => Err(format!("Invalid opcode: {:#x}", value)),
+            _ => Err(VMError::InvalidOpcode(value)),
         }
     }
 }

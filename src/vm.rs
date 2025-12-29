@@ -26,7 +26,7 @@ impl VM {
         self.code = bytecode.code;
         self.consts = bytecode.consts;
     }
-    pub fn execute(&mut self) -> Result<bool, String> {
+    pub fn execute(&mut self) -> Result<(), VMError> {
         loop {
             let opcode = OpCode::try_from(self.code[self.ip])?;
             // println!("Test, {}, {:?}, {:?}", self.ip, self.stack, opcode);
@@ -34,11 +34,11 @@ impl VM {
             match opcode {
                 // Arithmetic
                 OpCode::AddInt => {
-                    let lop = self.stack.pop();
-                    let rop = self.stack.pop();
+                    let lop = self.stack.pop()?;
+                    let rop = self.stack.pop()?;
                     println!("stack after pops: {:?}", self.stack);
                     match (lop, rop) {
-                        (Some(Value::Int(l)), Some(Value::Int(r))) => {
+                        (Value::Int(l), Value::Int(r)) => {
                             let result = l + r;
                             self.stack.push(Value::Int(result));
                             println!("add: {} + {} = {}", l, r, result);
@@ -74,33 +74,25 @@ impl VM {
                 //     self.ip += 2;
                 // }
                 OpCode::StoreGlobal => {
-                    let val = self.stack.pop();
+                    let val = self.stack.pop()?;
                     let arg = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
-                    match val {
-                        Some(v) => {
-                            if arg == self.globals.len() as u16 {
-                                self.globals.push(v);
-                            } else {
-                                self.globals[arg as usize] = v;
-                            }
-                        }
-                        None => {
-                            return Err("Stack Underflow".to_string());
-                        }
+                    if arg == self.globals.len() as u16 {
+                        self.globals.push(val);
+                    } else {
+                        self.globals[arg as usize] = val;
                     }
                     self.ip += 2;
                 }
                 OpCode::PushGlobal => {
                     let arg = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
                     if arg < self.globals.len() as u16 {
-                        self.stack.push(self.globals[arg as usize].clone());
+                        self.stack.push(self.globals[arg as usize].clone())?;
                     }
                     self.ip += 2;
                 }
                 OpCode::Print => {
-                    if let Some(val) = self.stack.pop() {
-                        println!("{:?}", val);
-                    };
+                    let val = self.stack.pop()?;
+                    println!("{:?}", val);
                 }
                 _ => {
                     panic!("Invalid opcode")
@@ -112,6 +104,6 @@ impl VM {
                 break;
             }
         }
-        Ok(true)
+        Ok(())
     }
 }

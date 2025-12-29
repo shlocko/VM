@@ -1,4 +1,4 @@
-use crate::value::Value;
+use crate::{error::VMError, value::Value};
 
 #[derive(Debug)]
 pub struct Stack {
@@ -13,10 +13,22 @@ impl Stack {
             max_size,
         }
     }
-    pub fn push(&mut self, val: Value) {
+    pub fn push(&mut self, val: Value) -> Result<(), VMError> {
+        if self.values.len() >= self.max_size {
+            return Err(VMError::StackOverflow);
+        }
         self.values.push(val);
+        Ok(())
     }
-    pub fn pop(&mut self) -> Option<Value> {
-        self.values.pop()
+    pub fn pop(&mut self) -> Result<Value, VMError> {
+        let result = self.values.pop();
+        match result {
+            Some(val) => {
+                return Ok(val);
+            }
+            None => {
+                return Err(VMError::StackUnderflow);
+            }
+        }
     }
 }
