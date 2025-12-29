@@ -14,13 +14,11 @@ pub enum OpCode {
     // Memory/Stack Manipulation
     PushConst = 0x10,     // pshc u16
     PushLocal = 0x11,     // pshl u16
-    CreateLocal = 0x12,   // crtl u16
-    StoreLocal = 0x13,    // strl u16
-    PushGlobal = 0x14,    // pshg u16
-    CreateGlobal = 0x15,  // crtg u16
-    StoreGlobal = 0x16,   // strg u16
-    Pop = 0x17,           // pops
-    PushImmediate = 0x18, // pshm i16
+    StoreLocal = 0x12,    // strl u16
+    PushGlobal = 0x13,    // pshg u16
+    StoreGlobal = 0x14,   // strg u16
+    Pop = 0x15,           // pops
+    PushImmediate = 0x16, // pshm i16
 
     // Testing ops
     Print = 0xF5, // prnt
@@ -57,13 +55,11 @@ impl TryFrom<u8> for OpCode {
             // Memory/Stack Manipulation
             0x10 => Ok(OpCode::PushConst),
             0x11 => Ok(OpCode::PushLocal),
-            0x12 => Ok(OpCode::CreateLocal),
-            0x13 => Ok(OpCode::StoreLocal),
-            0x14 => Ok(OpCode::PushGlobal),
-            0x15 => Ok(OpCode::CreateGlobal),
-            0x16 => Ok(OpCode::StoreGlobal),
-            0x17 => Ok(OpCode::Pop),
-            0x18 => Ok(OpCode::PushImmediate),
+            0x12 => Ok(OpCode::StoreLocal),
+            0x13 => Ok(OpCode::PushGlobal),
+            0x14 => Ok(OpCode::StoreGlobal),
+            0x15 => Ok(OpCode::Pop),
+            0x16 => Ok(OpCode::PushImmediate),
 
             // Testing
             0xF5 => Ok(OpCode::Print),

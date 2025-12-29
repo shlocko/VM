@@ -4,7 +4,7 @@ use crate::value::Value;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-pub fn assemble() -> Result<Vec<u8>, AssemblerError> {
+pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
     let file = File::open("program.fasm")?;
     let reader = BufReader::new(file);
     let mut linenum = 0;
@@ -111,6 +111,14 @@ pub fn assemble() -> Result<Vec<u8>, AssemblerError> {
                 bin_vec.push(final_arg[1]);
             }
 
+            "prnt" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::Print as u8);
+            }
             _ => {
                 return Err(AssemblerError::InvalidOpcode(format!(
                     "Invalid OpCode: {}, at line: {}",
@@ -120,7 +128,7 @@ pub fn assemble() -> Result<Vec<u8>, AssemblerError> {
         }
     }
 
-    Ok(bin_vec)
+    Ok((consts, bin_vec))
 }
 
 fn parse_literal(s: &str, line: i32) -> Result<Value, AssemblerError> {

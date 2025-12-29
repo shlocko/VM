@@ -46,7 +46,6 @@ impl VM {
                             println!("Wrong values");
                         }
                     }
-                    self.ip += 1;
                 }
 
                 // Memory/Stack Manipulation
@@ -60,28 +59,33 @@ impl VM {
                     for num in opcode.arg_sizecount() {
                         self.ip += num;
                     }
-                    self.ip += 1;
                 }
                 OpCode::PushImmediate => {
                     let val = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
 
                     self.stack.push(Value::Int(val as i64));
-                    self.ip += 3;
+                    self.ip += 2;
                 }
                 OpCode::PushGlobal => {
                     let global_idx =
                         u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
                     self.stack.push(self.globals[global_idx as usize].clone());
-                    self.ip += 3;
+                    self.ip += 2;
                 }
                 OpCode::StoreGlobal => {
                     let val = self.stack.pop();
+                }
+                OpCode::Print => {
+                    if let Some(val) = self.stack.pop() {
+                        println!("{:?}", val);
+                    };
                 }
                 _ => {
                     panic!("Invalid opcode")
                 }
             }
             println!("Stack after {:?}: {:?}", opcode, self.stack);
+            self.ip += 1;
             if self.ip >= self.code.len() {
                 break;
             }
