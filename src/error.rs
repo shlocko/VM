@@ -1,10 +1,13 @@
 use std::io;
 
+use crate::value::Value;
+
 #[derive(Debug)]
 pub enum VMError {
     // Stack Errors
     StackOverflow,
     StackUnderflow,
+    InvalidStackValueType(Value, Value), // (Expected, Received)
 
     // Index Errors
     InvalidLocalIndex(u16),
@@ -24,6 +27,7 @@ pub enum AssemblerError {
     InvalidOpcode(String),
     InvalidArgument(String),
     InvalidLiteral(String),
+    InvalidJumpTarget(String),
     UnexpectedEof,
 }
 

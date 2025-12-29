@@ -3,27 +3,34 @@ use crate::error::VMError;
 #[repr(u8)]
 #[derive(Debug, Copy, Clone)]
 pub enum OpCode {
-    // Arithmetic
-    AddInt = 0x00,   // addi
-    AddFloat = 0x01, // addf
-    SubInt = 0x02,   // subi
-    SubFloat = 0x03, // subf
-    MulInt = 0x04,   // muli
-    MulFloat = 0x05, // mulf
-    DivInt = 0x06,   // divi
-    DivFloat = 0x07, // divf
+    // Arithmetic 0x00 - 0x0F
+    AddInt = 0x00,   // -- addi
+    AddFloat = 0x01, // -- addf
+    SubInt = 0x02,   // -- subi
+    SubFloat = 0x03, // -- subf
+    MulInt = 0x04,   // -- muli
+    MulFloat = 0x05, // -- mulf
+    DivInt = 0x06,   // -- divi
+    DivFloat = 0x07, // -- divf
 
-    // Memory/Stack Manipulation
-    PushConst = 0x10,     // pshc u16
-    PushLocal = 0x11,     // pshl u16
-    StoreLocal = 0x12,    // strl u16
-    PushGlobal = 0x13,    // pshg u16
-    StoreGlobal = 0x14,   // strg u16
-    Pop = 0x15,           // pops
-    PushImmediate = 0x16, // pshm i16
+    // Memory/Stack Manipulation 0x10 - 0x25
+    PushConst = 0x10,     // u16 -- pshc <literal>
+    PushLocal = 0x11,     // u16 -- pshl <ident>
+    StoreLocal = 0x12,    // u16 -- strl <ident>
+    PushGlobal = 0x13,    // u16 -- pshg <ident>
+    StoreGlobal = 0x14,   // u16 -- strg <ident>
+    Pop = 0x15,           //     -- pops
+    PushImmediate = 0x16, // i16 --
+
+    // Control Flow 0x26 - 0x3F
+    Jump = 0x26,        // u32 -- jump <label>
+    JumpIfFalse = 0x27, // u32 -- jmpf <label>
 
     // Testing ops
     Print = 0xF5, // prnt
+
+    // No Op
+    NoOp = 0xFF,
 }
 
 impl OpCode {
@@ -63,8 +70,13 @@ impl TryFrom<u8> for OpCode {
             0x15 => Ok(OpCode::Pop),
             0x16 => Ok(OpCode::PushImmediate),
 
+            // Control Flow
+            0x26 => Ok(OpCode::Jump),
+            0x27 => Ok(OpCode::JumpIfFalse),
+
             // Testing
             0xF5 => Ok(OpCode::Print),
+            0xFF => Ok(OpCode::NoOp),
             _ => Err(VMError::InvalidOpcode(value)),
         }
     }

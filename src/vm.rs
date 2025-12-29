@@ -13,6 +13,26 @@ pub struct VM {
 }
 
 impl VM {
+    fn u32_from_le(&mut self) -> u32 {
+        let val = u32::from_le_bytes([
+            self.code[self.ip + 1],
+            self.code[self.ip + 2],
+            self.code[self.ip + 3],
+            self.code[self.ip + 4],
+        ]);
+        self.ip += 4;
+        return val;
+    }
+    fn u16_from_le(&mut self) -> u16 {
+        let val = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+        self.ip += 2;
+        return val;
+    }
+    fn i16_from_le(&mut self) -> i16 {
+        let val = i16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+        self.ip += 2;
+        return val;
+    }
     pub fn new(max_stack_size: usize) -> Self {
         Self {
             stack: Stack::new(max_stack_size),
@@ -40,7 +60,7 @@ impl VM {
                     match (lop, rop) {
                         (Value::Int(l), Value::Int(r)) => {
                             let result = l + r;
-                            self.stack.push(Value::Int(result));
+                            self.stack.push(Value::Int(result))?;
                             println!("add: {} + {} = {}", l, r, result);
                         }
                         _ => {
@@ -52,48 +72,61 @@ impl VM {
                 // Memory/Stack Manipulation
                 OpCode::PushConst => {
                     // Read arg from bytes encoded as 2 LE bytes
-                    let val = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                    let val = self.u16_from_le();
                     // Push const at location indicated by arg to stack
-                    self.stack.push(self.consts[val as usize].clone());
-
-                    // Increment IP by the number of bytes in opcode
-                    for num in opcode.arg_sizecount() {
-                        self.ip += num;
-                    }
+                    self.stack.push(self.consts[val as usize].clone())?;
                 }
                 OpCode::PushImmediate => {
-                    let val = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                    let val = self.u16_from_le();
 
-                    self.stack.push(Value::Int(val as i64));
-                    self.ip += 2;
+                    self.stack.push(Value::Int(val as i64))?;
                 }
-                // OpCode::PushGlobal => {
-                //     let global_idx =
-                //         u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
-                //     self.stack.push(self.globals[global_idx as usize].clone());
-                //     self.ip += 2;
-                // }
                 OpCode::StoreGlobal => {
                     let val = self.stack.pop()?;
-                    let arg = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                    let arg = self.u16_from_le();
                     if arg == self.globals.len() as u16 {
                         self.globals.push(val);
                     } else {
                         self.globals[arg as usize] = val;
                     }
-                    self.ip += 2;
                 }
                 OpCode::PushGlobal => {
-                    let arg = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                    let arg = self.u16_from_le();
                     if arg < self.globals.len() as u16 {
                         self.stack.push(self.globals[arg as usize].clone())?;
                     }
-                    self.ip += 2;
                 }
+                OpCode::Pop => {
+                    self.stack.pop()?;
+                }
+
+                // Control Flow
+                OpCode::Jump => {
+                    let arg = self.u32_from_le() as usize;
+                    println!("JUMP {}", arg);
+                    self.ip = arg;
+                }
+                OpCode::JumpIfFalse => {
+                    let val = self.stack.pop()?;
+                    let arg = self.u32_from_le() as usize;
+                    match val {
+                        Value::Bool(v) => {
+                            if !v {
+                                self.ip = arg;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidStackValueType(Value::Bool(true), val)),
+                    }
+                }
+
+                // Testing ops
                 OpCode::Print => {
                     let val = self.stack.pop()?;
                     println!("{:?}", val);
                 }
+
+                // No Op
+                OpCode::NoOp => {}
                 _ => {
                     panic!("Invalid opcode")
                 }

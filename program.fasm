@@ -1,6 +1,10 @@
-pshc 4568
-strg foo
 pshc 1
+jump target
+pshc 2
+strg foo
+pshc 9999
 pshg foo
+labl target
+pshc 3
 addi
 prnt
