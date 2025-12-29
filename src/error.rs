@@ -17,16 +17,18 @@ pub enum VMErrorKind {
     InvalidOperandSize(u8, u8),
 }
 
-pub enum AssemblerErrorKind {
+#[derive(Debug)]
+pub enum AssemblerError {
     IoError(io::Error),
     InvalidOpcode(String),
     InvalidArgument(String),
+    InvalidLiteral(String),
     UnexpectedEof,
 }
 
 // Automatically convert io::Error to AssemblerError
-impl From<io::Error> for AssemblerErrorKind {
+impl From<io::Error> for AssemblerError {
     fn from(error: io::Error) -> Self {
-        AssemblerErrorKind::IoError(error)
+        AssemblerError::IoError(error)
     }
 }

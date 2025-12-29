@@ -54,7 +54,7 @@ impl VM {
                     // Read arg from bytes encoded as 2 LE bytes
                     let val = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
                     // Push const at location indicated by arg to stack
-                    self.stack.push(self.consts[val as usize]);
+                    self.stack.push(self.consts[val as usize].clone());
 
                     // Increment IP by the number of bytes in opcode
                     for num in opcode.arg_sizecount() {
@@ -71,7 +71,7 @@ impl VM {
                 OpCode::PushGlobal => {
                     let global_idx =
                         u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
-                    self.stack.push(self.globals[global_idx as usize]);
+                    self.stack.push(self.globals[global_idx as usize].clone());
                     self.ip += 3;
                 }
                 OpCode::StoreGlobal => {
