@@ -1,6 +1,6 @@
 use std::io;
 
-pub enum VMErrorKind {
+pub enum VMError {
     // Stack Errors
     StackOverflow,
     StackUnderflow,
@@ -26,7 +26,6 @@ pub enum AssemblerError {
     UnexpectedEof,
 }
 
-// Automatically convert io::Error to AssemblerError
 impl From<io::Error> for AssemblerError {
     fn from(error: io::Error) -> Self {
         AssemblerError::IoError(error)

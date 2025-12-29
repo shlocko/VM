@@ -1,5 +1,5 @@
 use crate::bytecode::Bytecode;
-use crate::error::VMErrorKind;
+use crate::error::VMError;
 use crate::memory::Stack;
 use crate::opcode::OpCode;
 use crate::value::Value;
