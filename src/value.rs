@@ -4,4 +4,5 @@ pub enum Value {
     Float(f64),
     String(String),
     Bool(bool),
+    Ident(String),
 }

@@ -1,4 +1,5 @@
 use crate::bytecode::Bytecode;
+use crate::error::VMErrorKind;
 use crate::memory::Stack;
 use crate::opcode::OpCode;
 use crate::value::Value;
@@ -66,14 +67,35 @@ impl VM {
                     self.stack.push(Value::Int(val as i64));
                     self.ip += 2;
                 }
-                OpCode::PushGlobal => {
-                    let global_idx =
-                        u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
-                    self.stack.push(self.globals[global_idx as usize].clone());
-                    self.ip += 2;
-                }
+                // OpCode::PushGlobal => {
+                //     let global_idx =
+                //         u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                //     self.stack.push(self.globals[global_idx as usize].clone());
+                //     self.ip += 2;
+                // }
                 OpCode::StoreGlobal => {
                     let val = self.stack.pop();
+                    let arg = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                    match val {
+                        Some(v) => {
+                            if arg == self.globals.len() as u16 {
+                                self.globals.push(v);
+                            } else {
+                                self.globals[arg as usize] = v;
+                            }
+                        }
+                        None => {
+                            return Err("Stack Underflow".to_string());
+                        }
+                    }
+                    self.ip += 2;
+                }
+                OpCode::PushGlobal => {
+                    let arg = u16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
+                    if arg < self.globals.len() as u16 {
+                        self.stack.push(self.globals[arg as usize].clone());
+                    }
+                    self.ip += 2;
                 }
                 OpCode::Print => {
                     if let Some(val) = self.stack.pop() {

@@ -1,4 +1,6 @@
 pshc 4568
-pshc 4569
-pshc 4568
+strg foo
+pshc 1
+pshg foo
+addi
 prnt

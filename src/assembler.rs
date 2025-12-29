@@ -1,6 +1,7 @@
 use crate::error::AssemblerError;
 use crate::opcode::OpCode;
 use crate::value::Value;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -8,9 +9,10 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
     let file = File::open("program.fasm")?;
     let reader = BufReader::new(file);
     let mut linenum = 0;
-    let mut err = false;
     let mut bin_vec: Vec<u8> = Vec::new();
     let mut consts: Vec<Value> = Vec::new();
+    let mut globals: Vec<Value> = Vec::new();
+    let mut globals_names: HashMap<String, u16> = HashMap::new();
 
     for line in reader.lines() {
         linenum += 1;
@@ -110,6 +112,67 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
                 bin_vec.push(final_arg[0]);
                 bin_vec.push(final_arg[1]);
             }
+            "strg" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                let arg = parse_literal(data[1], linenum);
+                let idx: u16;
+                match arg {
+                    Ok(Value::Ident(name)) => {
+                        if let Some(id) = globals_names.get(name.as_str()) {
+                            idx = *id;
+                        } else {
+                            let id = globals_names.iter().count() as u16;
+                            let _ = globals_names.insert(name, id);
+                            idx = id;
+                        }
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected identifier at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+                let final_arg = idx.to_le_bytes();
+                bin_vec.push(OpCode::StoreGlobal as u8);
+                bin_vec.push(final_arg[0]);
+                bin_vec.push(final_arg[1]);
+            }
+            "pshg" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                let arg = parse_literal(data[1], linenum);
+                let idx: u16;
+                match arg {
+                    Ok(Value::Ident(name)) => {
+                        if let Some(id) = globals_names.get(name.as_str()) {
+                            idx = *id;
+                        } else {
+                            return Err(AssemblerError::InvalidArgument(format!(
+                                "Expected global identifier at line: {}",
+                                linenum
+                            )));
+                        }
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected global identifier at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+                let final_arg = u16::to_le_bytes(idx);
+                bin_vec.push(OpCode::PushGlobal as u8);
+                bin_vec.push(final_arg[0]);
+                bin_vec.push(final_arg[1]);
+            }
 
             "prnt" => {
                 if data.len() > 1 {
@@ -146,10 +209,33 @@ fn parse_literal(s: &str, line: i32) -> Result<Value, AssemblerError> {
             AssemblerError::InvalidLiteral(format!("Invalid Float at line: {}", line))
         });
     }
-    return arg
-        .parse::<i64>()
-        .map(|x| Value::Int(x))
-        .map_err(|_| AssemblerError::InvalidLiteral(format!("Invalid Literal at line: {}", line)));
+    // return arg
+    //     .parse::<i64>()
+    //     .map(|x| Value::Int(x))
+    //     .map_err(|_| AssemblerError::InvalidLiteral(format!("Invalid Literal at line: {}", line)));
+    let iresult = arg.parse::<i64>();
+    match iresult {
+        Ok(val) => {
+            return Ok(Value::Int(val));
+        }
+        Err(_) => {
+            if let Some(ch) = arg.chars().next() {
+                if (ch.is_alphabetic()) {
+                    return Ok(Value::Ident(arg.to_string()));
+                } else {
+                    return Err(AssemblerError::InvalidLiteral(format!(
+                        "Expected Identifier at line: {}",
+                        line
+                    )));
+                }
+            } else {
+                return Err(AssemblerError::InvalidLiteral(format!(
+                    "Invalid literal at line: {}",
+                    line
+                )));
+            };
+        }
+    }
 }
 
 #[cfg(test)]
@@ -190,8 +276,26 @@ mod tests {
     }
 
     #[test]
+    fn parse_ident() {
+        let result = parse_literal("testIdent", 0);
+        assert_eq!(result.unwrap(), Value::Ident("testIdent".to_string()));
+    }
+
+    #[test]
     #[should_panic]
     fn parse_fail() {
-        let result = parse_literal("'test", 0).unwrap();
+        let _ = parse_literal("'test", 0).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn parse_bad_ident() {
+        let _ = parse_literal("1test", 0).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn parse_empty_arg() {
+        let _ = parse_literal("", 0).unwrap();
     }
 }

@@ -1,6 +1,5 @@
 use fvm::assembler::assemble;
 use fvm::bytecode::Bytecode;
-use fvm::value::Value;
 use fvm::vm::VM;
 
 fn main() {
@@ -16,7 +15,7 @@ fn main() {
             _ = vm.execute();
         }
         Err(er) => {
-            println!("Error");
+            println!("Error {:?}", er);
         }
     }
 }
