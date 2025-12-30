@@ -19,6 +19,10 @@ pub enum VMError {
     InvalidOpcode(u8),
     InvalidOperandCount(u8, u8),
     InvalidOperandSize(u8, u8),
+
+    // Operand erros
+    InvalidOperandType(Value, Value),
+    InvalidUnaryOperandType(Value),
 }
 
 #[derive(Debug)]

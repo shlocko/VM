@@ -1,10 +1,48 @@
+; generate n+2 th fib number
+pshc 10
+strg n
+
+pshc 0
+strg a
+
 pshc 1
-jump target
-pshc 2
-strg foo
-pshc 9999
-pshg foo
-labl target
-pshc 3
-addi
+strg b
+
+labl loop
+
+; check n <= 0
+pshg n
+pshc 0
+lteq
+jmpt end
+
+; temp = a + b
+pshg a
+pshg b
+adds
+strg temp
+
+; a = b
+pshg b
+strg a
+
+; b = temp
+pshg temp
+strg b
+
+; n = n - 1
+pshg n
+pshc 1
+subs
+strg n
+
+pshg b
+prnt
+
+jump loop
+
+
+labl end
+; Result is in b
+pshg b
 prnt

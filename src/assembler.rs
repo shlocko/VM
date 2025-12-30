@@ -26,53 +26,39 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
         let data: Vec<&str> = line.split(" ").collect();
         let op = data[0];
         match op {
-            "addi" => {
+            ";" => {}
+            "" => {}
+            "adds" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::AddInt as u8);
+                bin_vec.push(OpCode::Add as u8);
             }
-            "addf" => {
+            "subs" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::AddFloat as u8);
+                bin_vec.push(OpCode::Sub as u8);
             }
-            "subi" => {
+            "muls" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::SubInt as u8);
+                bin_vec.push(OpCode::Mul as u8);
             }
-            "subf" => {
+            "divs" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::SubFloat as u8);
-            }
-            "muli" => {
-                if data.len() > 1 {
-                    return Err(AssemblerError::InvalidArgument(
-                        "Expected zero arguments".to_string(),
-                    ));
-                }
-                bin_vec.push(OpCode::MulInt as u8);
-            }
-            "mulf" => {
-                if data.len() > 1 {
-                    return Err(AssemblerError::InvalidArgument(
-                        "Expected zero arguments".to_string(),
-                    ));
-                }
-                bin_vec.push(OpCode::MulFloat as u8);
+                bin_vec.push(OpCode::Div as u8);
             }
             "divi" => {
                 if data.len() > 1 {
@@ -81,14 +67,6 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
                     ));
                 }
                 bin_vec.push(OpCode::DivInt as u8);
-            }
-            "divf" => {
-                if data.len() > 1 {
-                    return Err(AssemblerError::InvalidArgument(
-                        "Expected zero arguments".to_string(),
-                    ));
-                }
-                bin_vec.push(OpCode::DivFloat as u8);
             }
             "pshc" => {
                 if data.len() != 2 {
@@ -222,7 +200,12 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
                             fix_labels.push(FixLabel {
                                 offset: bin_vec.len(),
                                 label: name,
-                            })
+                            });
+                            let location = u32::to_le_bytes(0);
+                            bin_vec.push(location[0]);
+                            bin_vec.push(location[1]);
+                            bin_vec.push(location[2]);
+                            bin_vec.push(location[3]);
                         };
                     }
                     _ => {
@@ -232,6 +215,154 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
                         )));
                     }
                 }
+            }
+            "jmpf" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                let arg = parse_literal(data[1], linenum)?;
+                match arg {
+                    Value::Ident(name) => {
+                        // labels.insert(name, (bin_vec.len() - 1) as u32);
+                        bin_vec.push(OpCode::JumpIfFalse as u8);
+                        if let Some(target) = labels.get(&name) {
+                            let location = u32::to_le_bytes(*target);
+                            bin_vec.push(location[0]);
+                            bin_vec.push(location[1]);
+                            bin_vec.push(location[2]);
+                            bin_vec.push(location[3]);
+                        } else {
+                            fix_labels.push(FixLabel {
+                                offset: bin_vec.len(),
+                                label: name,
+                            });
+                            let location = u32::to_le_bytes(0);
+                            bin_vec.push(location[0]);
+                            bin_vec.push(location[1]);
+                            bin_vec.push(location[2]);
+                            bin_vec.push(location[3]);
+                        };
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected label identifier at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+            }
+            "jmpt" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                let arg = parse_literal(data[1], linenum)?;
+                match arg {
+                    Value::Ident(name) => {
+                        // labels.insert(name, (bin_vec.len() - 1) as u32);
+                        bin_vec.push(OpCode::JumpIfTrue as u8);
+                        if let Some(target) = labels.get(&name) {
+                            let location = u32::to_le_bytes(*target);
+                            bin_vec.push(location[0]);
+                            bin_vec.push(location[1]);
+                            bin_vec.push(location[2]);
+                            bin_vec.push(location[3]);
+                        } else {
+                            fix_labels.push(FixLabel {
+                                offset: bin_vec.len(),
+                                label: name,
+                            });
+                            let location = u32::to_le_bytes(0);
+                            bin_vec.push(location[0]);
+                            bin_vec.push(location[1]);
+                            bin_vec.push(location[2]);
+                            bin_vec.push(location[3]);
+                        };
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected label identifier at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+            }
+
+            // Comparisons and operators
+            "equl" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::Equal as u8);
+            }
+            "nteq" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::NotEqual as u8);
+            }
+            "lsth" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::LessThan as u8);
+            }
+            "grth" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::GreaterThan as u8);
+            }
+            "gteq" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::GreaterEqual as u8);
+            }
+            "lteq" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::LessEqual as u8);
+            }
+            "bnot" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::Not as u8);
+            }
+            "land" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::LogicalAnd as u8);
+            }
+            "lgor" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::LogicalOr as u8);
             }
 
             "prnt" => {
@@ -258,6 +389,11 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
             bin_vec[label.offset + 1] = bytes[1];
             bin_vec[label.offset + 2] = bytes[2];
             bin_vec[label.offset + 3] = bytes[3];
+        } else {
+            return Err(AssemblerError::InvalidJumpTarget(format!(
+                "Invalid jump target: {}",
+                label.label
+            )));
         }
     }
 

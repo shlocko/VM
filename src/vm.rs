@@ -49,19 +49,33 @@ impl VM {
     pub fn execute(&mut self) -> Result<(), VMError> {
         loop {
             let opcode = OpCode::try_from(self.code[self.ip])?;
-            // println!("Test, {}, {:?}, {:?}", self.ip, self.stack, opcode);
-            println!("Stack before {:?}: {:?}", opcode, self.stack);
+            // println!("Stack before {:?}: {:?}", opcode, self.stack);
             match opcode {
                 // Arithmetic
-                OpCode::AddInt => {
-                    let lop = self.stack.pop()?;
+                OpCode::Add => {
                     let rop = self.stack.pop()?;
-                    println!("stack after pops: {:?}", self.stack);
+                    let lop = self.stack.pop()?;
+                    // println!("stack after pops: {:?}", self.stack);
                     match (lop, rop) {
                         (Value::Int(l), Value::Int(r)) => {
                             let result = l + r;
                             self.stack.push(Value::Int(result))?;
-                            println!("add: {} + {} = {}", l, r, result);
+                            // println!("add: {} + {} = {}", l, r, result);
+                        }
+                        _ => {
+                            println!("Wrong values");
+                        }
+                    }
+                }
+                OpCode::Sub => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    // println!("stack after pops: {:?}", self.stack);
+                    match (lop, rop) {
+                        (Value::Int(l), Value::Int(r)) => {
+                            let result = l - r;
+                            self.stack.push(Value::Int(result))?;
+                            // println!("add: {} + {} = {}", l, r, result);
                         }
                         _ => {
                             println!("Wrong values");
@@ -71,9 +85,7 @@ impl VM {
 
                 // Memory/Stack Manipulation
                 OpCode::PushConst => {
-                    // Read arg from bytes encoded as 2 LE bytes
                     let val = self.u16_from_le();
-                    // Push const at location indicated by arg to stack
                     self.stack.push(self.consts[val as usize].clone())?;
                 }
                 OpCode::PushImmediate => {
@@ -103,7 +115,7 @@ impl VM {
                 // Control Flow
                 OpCode::Jump => {
                     let arg = self.u32_from_le() as usize;
-                    println!("JUMP {}", arg);
+                    // println!("JUMP {}", arg);
                     self.ip = arg;
                 }
                 OpCode::JumpIfFalse => {
@@ -118,6 +130,170 @@ impl VM {
                         _ => return Err(VMError::InvalidStackValueType(Value::Bool(true), val)),
                     }
                 }
+                OpCode::JumpIfTrue => {
+                    let val = self.stack.pop()?;
+                    let arg = self.u32_from_le() as usize;
+                    match val {
+                        Value::Bool(true) => {
+                            self.ip = arg;
+                        }
+                        Value::Bool(false) => {}
+                        _ => return Err(VMError::InvalidStackValueType(Value::Bool(true), val)),
+                    }
+                }
+
+                // Comparison and other operators
+                OpCode::Equal => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    let mut result: bool = false;
+                    match (&lop, &rop) {
+                        (Value::Int(l), Value::Int(r)) => {
+                            if l == r {
+                                result = true;
+                            }
+                        }
+                        (Value::Bool(l), Value::Bool(r)) => {
+                            if l == r {
+                                result = true;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                    self.stack.push(Value::Bool(result))?;
+                }
+                OpCode::NotEqual => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    let mut result: bool = false;
+                    match (&lop, &rop) {
+                        (Value::Int(l), Value::Int(r)) => {
+                            if l != r {
+                                result = true;
+                            }
+                        }
+                        (Value::Bool(l), Value::Bool(r)) => {
+                            if l != r {
+                                result = true;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                    self.stack.push(Value::Bool(result))?;
+                }
+                OpCode::LessThan => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    let mut result: bool = false;
+                    match (&lop, &rop) {
+                        (Value::Int(l), Value::Int(r)) => {
+                            if l < r {
+                                result = true;
+                            }
+                        }
+                        (Value::Float(l), Value::Float(r)) => {
+                            if l < r {
+                                result = true;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                    self.stack.push(Value::Bool(result))?;
+                }
+                OpCode::GreaterThan => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    let mut result: bool = false;
+                    match (&lop, &rop) {
+                        (Value::Int(l), Value::Int(r)) => {
+                            if l > r {
+                                result = true;
+                            }
+                        }
+                        (Value::Float(l), Value::Float(r)) => {
+                            if l > r {
+                                result = true;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                    self.stack.push(Value::Bool(result))?;
+                }
+                OpCode::GreaterEqual => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    let mut result: bool = false;
+                    match (&lop, &rop) {
+                        (Value::Int(l), Value::Int(r)) => {
+                            if l >= r {
+                                result = true;
+                            }
+                        }
+                        (Value::Float(l), Value::Float(r)) => {
+                            if l >= r {
+                                result = true;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                    self.stack.push(Value::Bool(result))?;
+                }
+                OpCode::LessEqual => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    let mut result: bool = false;
+                    match (&lop, &rop) {
+                        (Value::Int(l), Value::Int(r)) => {
+                            if l <= r {
+                                result = true;
+                            }
+                        }
+                        (Value::Float(l), Value::Float(r)) => {
+                            if l <= r {
+                                result = true;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                    self.stack.push(Value::Bool(result))?;
+                }
+                OpCode::Not => {
+                    let val = self.stack.pop()?;
+                    match &val {
+                        Value::Bool(v) => {
+                            self.stack.push(Value::Bool(!v))?;
+                        }
+                        _ => return Err(VMError::InvalidUnaryOperandType(val)),
+                    }
+                }
+                OpCode::LogicalAnd => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    let mut result: bool = false;
+                    match (&lop, &rop) {
+                        (Value::Bool(l), Value::Bool(r)) => {
+                            if *l && *r {
+                                result = true;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                    self.stack.push(Value::Bool(result))?;
+                }
+                OpCode::LogicalOr => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+                    let mut result: bool = false;
+                    match (&lop, &rop) {
+                        (Value::Bool(l), Value::Bool(r)) => {
+                            if *l || *r {
+                                result = true;
+                            }
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                    self.stack.push(Value::Bool(result))?;
+                }
 
                 // Testing ops
                 OpCode::Print => {
@@ -131,7 +307,7 @@ impl VM {
                     panic!("Invalid opcode")
                 }
             }
-            println!("Stack after {:?}: {:?}", opcode, self.stack);
+            // println!("Stack after {:?}: {:?}", opcode, self.stack);
             self.ip += 1;
             if self.ip >= self.code.len() {
                 break;
