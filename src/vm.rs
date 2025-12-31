@@ -33,9 +33,9 @@ impl VM {
         self.ip += 2;
         return val;
     }
-    pub fn new(max_stack_size: usize) -> Self {
+    pub fn new(init_stack_cap: usize) -> Self {
         Self {
-            stack: Stack::new(max_stack_size),
+            stack: Stack::new(init_stack_cap, usize::MAX),
             consts: Vec::new(),
             globals: Vec::new(),
             code: Vec::new(),

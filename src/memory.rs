@@ -4,31 +4,38 @@ use crate::{error::VMError, value::Value};
 pub struct Stack {
     values: Vec<Value>,
     max_size: usize,
+    pointer: usize,
 }
 
 impl Stack {
-    pub fn new(max_size: usize) -> Self {
-        Self {
-            values: Vec::with_capacity(max_size),
+    pub fn new(init_capacity: usize, max_size: usize) -> Self {
+        let mut stack = Self {
+            values: Vec::new(),
             max_size,
-        }
+            pointer: 0,
+        };
+
+        stack.values.resize(init_capacity, Value::default());
+
+        return stack;
     }
     pub fn push(&mut self, val: Value) -> Result<(), VMError> {
-        if self.values.len() >= self.max_size {
-            return Err(VMError::StackOverflow);
+        if self.pointer < self.max_size {
+            self.values[self.pointer] = val;
+            self.pointer += 1;
+            if self.pointer >= self.values.len() {
+                self.values.resize(self.values.len(), Value::default());
+            }
+            Ok(())
+        } else {
+            Err(VMError::StackOverflow)
         }
-        self.values.push(val);
-        Ok(())
     }
     pub fn pop(&mut self) -> Result<Value, VMError> {
-        let result = self.values.pop();
-        match result {
-            Some(val) => {
-                return Ok(val);
-            }
-            None => {
-                return Err(VMError::StackUnderflow);
-            }
+        if self.pointer <= 0 {
+            return Err(VMError::StackUnderflow);
         }
+        self.pointer -= 1;
+        return Ok(self.values[self.pointer].clone());
     }
 }
