@@ -1,68 +1,69 @@
 
-# func fib 1
-# pshl arg0
-# pshc 2
-# subs
-# strl arg0
+func fib 1
+pshl arg0
+pshc 2
+subs
+strl arg0
 
-# pshc 0
-# strl a
+pshc 0
+strl a
 
-# pshc 1
-# strl b
+pshc 1
+strl b
 
-# labl loop
+labl loop
 
-# # check n <= 0
-# pshl arg0
-# pshc 0
-# lteq
-# jmpt end
+# check n <= 0
+pshl arg0
+pshc 0
+lteq
+jmpt end
 
-# # temp = a + b
-# pshl a
-# pshl b
-# adds
-# strl temp
+# temp = a + b
+pshl a
+pshl b
+adds
+strl temp
 
-# # a = b
-# pshl b
-# strl a
+# a = b
+pshl b
+strl a
 
-# # b = temp
-# pshl temp
-# strl b
+# b = temp
+pshl temp
+strl b
 
-# # n = n - 1
-# pshl arg0
-# pshc 1
-# subs
-# strl arg0
+# n = n - 1
+pshl arg0
+pshc 1
+subs
+strl arg0
 
-# pshl b
+pshl b
 
-# jump loop
-
-
-# labl end
-# # Result is in b
-# pshl b
-# endf
-
-# main
-
-# pshc 12callf fib
-# prnt
+jump loop
 
 
-func add 2
+labl end
+# Result is in b
+pshl b
+endf
+
+func addPlusOne 2
+pshc 1
+strl toAdd
 pshl arg0
 pshl arg1
 adds
+pshl toAdd
+adds
+
 endf
 
 main
-pshc 1
+
+pshc 5
+callf fib
 pshc 2
-callf add
+callf addPlusOne
 prnt
