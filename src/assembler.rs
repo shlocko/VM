@@ -1,6 +1,7 @@
 use crate::error::AssemblerError;
+use crate::function::Function;
 use crate::opcode::OpCode;
-use crate::value::Value;
+use crate::value::{HeapString, Value};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -10,15 +11,31 @@ struct FixLabel {
     label: String,
 }
 
-pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
+struct CurFunc {
+    name: String,
+    locals: HashMap<String, u8>,
+    done: bool,
+}
+
+pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), AssemblerError> {
     let file = File::open("program.fasm")?;
     let reader = BufReader::new(file);
     let mut linenum = 0;
+    // Vectors for binary format
     let mut bin_vec: Vec<u8> = Vec::new();
     let mut consts: Vec<Value> = Vec::new();
+    let mut functions: Vec<Function> = Vec::new();
+
     let mut globals_names: HashMap<String, u16> = HashMap::new();
     let mut labels: HashMap<String, u32> = HashMap::new();
     let mut fix_labels: Vec<FixLabel> = Vec::new();
+    let mut func_names: HashMap<String, usize> = HashMap::new();
+    let mut entry = 0;
+    let mut current_function: CurFunc = CurFunc {
+        name: "".to_string(),
+        locals: HashMap::new(),
+        done: true,
+    };
 
     for line in reader.lines() {
         linenum += 1;
@@ -26,7 +43,11 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
         let data: Vec<&str> = line.split(" ").collect();
         let op = data[0];
         match op {
-            ";" => {}
+            "main" => {
+                entry = bin_vec.len();
+                bin_vec.push(OpCode::NoOp as u8);
+            }
+            "#" => {}
             "" => {}
             "adds" => {
                 if data.len() > 1 {
@@ -95,6 +116,74 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
                 bin_vec.push(OpCode::PushConst as u8);
                 bin_vec.push(final_arg[0]);
                 bin_vec.push(final_arg[1]);
+            }
+            "pshl" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+
+                if current_function.done {
+                    return Err(AssemblerError::AccessLocalOutsideFunction(format!(
+                        "Attempeted to store local outside function on line: {}",
+                        linenum
+                    )));
+                }
+                let val = parse_literal(data[1], linenum)?;
+                match val {
+                    Value::Ident(ident) => {
+                        if let Some(idx) = current_function.locals.get(&ident) {
+                            bin_vec.push(OpCode::PushLocal as u8);
+                            bin_vec.push(*idx);
+                        } else {
+                            return Err(AssemblerError::InvalidIdentifier(format!(
+                                "Access local that isn't defined at line: {}",
+                                linenum
+                            )));
+                        }
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected identifier on line: {}",
+                            linenum
+                        )));
+                    }
+                }
+            }
+            "strl" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                if current_function.done {
+                    return Err(AssemblerError::AccessLocalOutsideFunction(format!(
+                        "Attempeted to store local outside function on line: {}",
+                        linenum
+                    )));
+                }
+                let val = parse_literal(data[1], linenum)?;
+                match val {
+                    Value::Ident(ident) => {
+                        if let Some(idx) = current_function.locals.get(&ident) {
+                            bin_vec.push(OpCode::StoreLocal as u8);
+                            bin_vec.push(*idx);
+                        } else {
+                            println!("storelocal {}", ident);
+                            let idx = current_function.locals.len();
+                            current_function.locals.insert(ident, idx as u8);
+                            bin_vec.push(OpCode::StoreLocal as u8);
+                            bin_vec.push(idx as u8);
+                        }
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected identifier on line: {}",
+                            linenum
+                        )));
+                    }
+                }
             }
             "strg" => {
                 if data.len() != 2 {
@@ -365,6 +454,109 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
                 bin_vec.push(OpCode::LogicalOr as u8);
             }
 
+            // Functions
+            "func" => {
+                if data.len() != 3 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected two argument".to_string(),
+                    ));
+                }
+                let ident = parse_literal(data[1], linenum)?;
+                let arity = parse_literal(data[2], linenum)?;
+                if !current_function.done {
+                    return Err(AssemblerError::InvalidFunctionLocation(format!(
+                        "Cannot create function inside function at line: {}",
+                        linenum
+                    )));
+                }
+                match (ident, arity) {
+                    (Value::Ident(id), Value::Int(ar)) => {
+                        if let Ok(num) = u8::try_from(ar) {
+                            func_names.insert(id.clone(), functions.len());
+
+                            functions.push(Function {
+                                address: bin_vec.len(),
+                                arity: num,
+                                locals: 0,
+                            });
+                            bin_vec.push(OpCode::NoOp as u8);
+                            current_function.done = false;
+                            current_function.locals = HashMap::new();
+                            current_function.name = id;
+                            for n in 0..num {
+                                current_function.locals.insert(
+                                    format!("arg{}", n.to_string()),
+                                    current_function.locals.len() as u8,
+                                );
+                            }
+                        } else {
+                            return Err(AssemblerError::InvalidArgument(format!(
+                                "Expected arity < 256 at line: {}",
+                                linenum
+                            )));
+                        }
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected arity < 256 and Identifier at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+            }
+            "endf" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                if current_function.done {
+                    return Err(AssemblerError::InvalidFunctionEnd(format!(
+                        "Tried to end function while not in function at line: {}",
+                        linenum
+                    )));
+                }
+                current_function.done = true;
+                if let Some(idx) = func_names.get(&current_function.name) {
+                    // println!("endf locals: {:?}", functions[*idx].locals);
+                    functions[*idx].locals = current_function.locals.len() as u8;
+                } else {
+                    println!("funcnames: {:?}, {:?}", func_names, current_function.name);
+                }
+                bin_vec.push(OpCode::Return as u8);
+            }
+            "callf" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected one argument at line: {}",
+                        linenum
+                    )));
+                }
+                let val = parse_literal(data[1], linenum)?;
+                match val {
+                    Value::Ident(ident) => {
+                        if let Some(idx) = func_names.get(&ident) {
+                            bin_vec.push(OpCode::CallFunction as u8);
+                            let arg = u16::to_le_bytes(*idx as u16);
+                            bin_vec.push(arg[0]);
+                            bin_vec.push(arg[1]);
+                        } else {
+                            return Err(AssemblerError::InvalidFunctionCall(format!(
+                                "Function doesn't exist at line: {}",
+                                linenum
+                            )));
+                        }
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected identifier at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+            }
+
+            // Other
             "prnt" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
@@ -397,14 +589,14 @@ pub fn assemble() -> Result<(Vec<Value>, Vec<u8>), AssemblerError> {
         }
     }
 
-    Ok((consts, bin_vec))
+    Ok((entry, consts, functions, bin_vec))
 }
 
 fn parse_literal(s: &str, line: i32) -> Result<Value, AssemblerError> {
     let arg = s.trim();
     if arg.starts_with('"') && arg.ends_with('"') || arg.starts_with('\'') && arg.ends_with('\'') {
         let content = &arg[1..arg.len() - 1];
-        return Ok(Value::String(content.to_string()));
+        return Ok(Value::String(HeapString::new(content.to_string())));
     }
     if arg == "true" || arg == "false" {
         return Ok(Value::Bool(arg.parse().unwrap()));
@@ -453,7 +645,10 @@ mod tests {
         let result = parse_literal("\"this is a test\"", 0);
         match result {
             Ok(msg) => {
-                assert_eq!(msg, Value::String("this is a test".to_string()));
+                assert_eq!(
+                    msg,
+                    Value::String(HeapString::new("this is a test".to_string()))
+                );
             }
             _ => {
                 panic!("Invalid string parse!");

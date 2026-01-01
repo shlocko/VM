@@ -20,15 +20,9 @@ pub enum OpCode {
     PushImmediate = 0x16, // i16 --
 
     // Control Flow 0x26 - 0x3F
-    Jump = 0x26,               // u32 -- jump <label>
-    JumpIfFalse = 0x27,        // u32 -- jmpf <label>
-    JumpIfTrue = 0x28,         // u32 --
-    JumpIfEqual = 0x29,        // u32 --
-    JumpIfNotEqual = 0x2A,     // u32 --
-    JumpIfGreaterThan = 0x2B,  // u32 --
-    JumpIfLessThan = 0x2C,     // u32 --
-    JumpIfGreaterEqual = 0x2D, // u32 --
-    JumpIfLessEqual = 0x2E,    // u32 --
+    Jump = 0x26,        // u32 -- jump <label>
+    JumpIfFalse = 0x27, // u32 -- jmpf <label>
+    JumpIfTrue = 0x28,  // u32 --
 
     // Comparisons and other operators 0x40
     Equal = 0x40,        // -- equl
@@ -40,6 +34,10 @@ pub enum OpCode {
     Not = 0x46,          // -- bnot
     LogicalAnd = 0x47,   // -- land
     LogicalOr = 0x48,    // -- lgor
+
+    // Functions
+    CallFunction = 0x61, //  u16(func id) -- call <ident>
+    Return = 0x62,
 
     // Testing ops
     Print = 0xF5, // prnt
@@ -86,12 +84,6 @@ impl TryFrom<u8> for OpCode {
             0x26 => Ok(OpCode::Jump),
             0x27 => Ok(OpCode::JumpIfFalse),
             0x28 => Ok(OpCode::JumpIfTrue),
-            0x29 => Ok(OpCode::JumpIfEqual),
-            0x2A => Ok(OpCode::JumpIfNotEqual),
-            0x2B => Ok(OpCode::JumpIfGreaterThan),
-            0x2C => Ok(OpCode::JumpIfLessThan),
-            0x2D => Ok(OpCode::JumpIfGreaterEqual),
-            0x2E => Ok(OpCode::JumpIfLessEqual),
 
             // Comparisons
             0x40 => Ok(OpCode::Equal),
@@ -104,6 +96,10 @@ impl TryFrom<u8> for OpCode {
             0x47 => Ok(OpCode::LogicalAnd),
             0x48 => Ok(OpCode::LogicalOr),
 
+            // Functions
+            0x61 => Ok(OpCode::CallFunction),
+            0x62 => Ok(OpCode::Return),
+
             // Testing
             0xF5 => Ok(OpCode::Print),
             0xFF => Ok(OpCode::NoOp),
@@ -111,3 +107,39 @@ impl TryFrom<u8> for OpCode {
         }
     }
 }
+
+pub struct StackEffect {
+    pop: u8,
+    push: u8,
+}
+
+// pub fn stack_impact(op: OpCode) -> StackEffect {
+//     match op {
+//         OpCode::Add => StackEffect { pop: 2, push: 1 },
+//         OpCode::Sub => StackEffect { pop: 2, push: 1 },
+//         OpCode::Mul => StackEffect { pop: 2, push: 1 },
+//         OpCode::Div => StackEffect { pop: 2, push: 1 },
+//         OpCode::DivInt => StackEffect { pop: 2, push: 1 },
+//         OpCode::PushConst => StackEffect { pop: 0, push: 1 },
+//         OpCode::PushLocal => StackEffect { pop: 0, push: 1 },
+//         OpCode::StoreLocal => StackEffect { pop: 1, push: 0 },
+//         OpCode::PushGlobal => StackEffect { pop: 0, push: 1 },
+//         OpCode::StoreGlobal => StackEffect { pop: 1, push: 0 },
+//         OpCode::Pop => StackEffect { pop: 1, push: 0 },
+//         OpCode::PushImmediate => StackEffect { pop: 0, push: 1 },
+//         OpCode::Jump => StackEffect { pop: 0, push: 0 },
+//         OpCode::JumpIfFalse => StackEffect { pop: 1, push: 0 },
+//         OpCode::JumpIfTrue => StackEffect { pop: 1, push: 0 },
+//         OpCode::Equal => StackEffect { pop: 2, push: 1 },
+//         OpCode::NotEqual => StackEffect { pop: 2, push: 1 },
+//         OpCode::LessThan => StackEffect { pop: 2, push: 1 },
+//         OpCode::GreaterThan => StackEffect { pop: 2, push: 1 },
+//         OpCode::GreaterEqual => StackEffect { pop: 2, push: 1 },
+//         OpCode::LessEqual => StackEffect { pop: 2, push: 1 },
+//         OpCode::Not => StackEffect { pop: 1, push: 1 },
+//         OpCode::LogicalAnd => StackEffect { pop: 2, push: 1 },
+//         OpCode::LogicalOr => StackEffect { pop: 2, push: 1 },
+//         OpCode::Print => StackEffect { pop: 1, push: 0 },
+//         OpCode::NoOp => StackEffect { pop: 0, push: 0 },
+//     }
+// }

@@ -1,6 +1,9 @@
+use std::collections::HashMap;
+
 use crate::bytecode::Bytecode;
 use crate::error::VMError;
-use crate::memory::Stack;
+use crate::function::Function;
+use crate::memory::{Stack, StackFrame};
 use crate::opcode::OpCode;
 use crate::value::Value;
 
@@ -8,6 +11,7 @@ pub struct VM {
     stack: Stack,
     consts: Vec<Value>,
     globals: Vec<Value>,
+    functions: Vec<Function>,
     code: Vec<u8>,
     ip: usize,
 }
@@ -33,18 +37,31 @@ impl VM {
         self.ip += 2;
         return val;
     }
+    fn bool_from_byte(&mut self) -> bool {
+        let val = self.code[self.ip + 1];
+        self.ip += 1;
+        return val != 0;
+    }
+    fn u8_from_byte(&mut self) -> u8 {
+        let val = self.code[self.ip + 1];
+        self.ip += 1;
+        return val;
+    }
     pub fn new(init_stack_cap: usize) -> Self {
         Self {
             stack: Stack::new(init_stack_cap, usize::MAX),
             consts: Vec::new(),
             globals: Vec::new(),
+            functions: Vec::new(),
             code: Vec::new(),
             ip: 0,
         }
     }
     pub fn load_code(&mut self, bytecode: Bytecode) {
+        self.ip = bytecode.entry;
         self.code = bytecode.code;
         self.consts = bytecode.consts;
+        self.functions = bytecode.functions;
     }
     pub fn execute(&mut self) -> Result<(), VMError> {
         loop {
@@ -92,6 +109,16 @@ impl VM {
                     let val = self.u16_from_le();
 
                     self.stack.push(Value::Int(val as i64))?;
+                }
+                OpCode::StoreLocal => {
+                    let idx = self.u8_from_byte();
+                    let val = self.stack.pop()?;
+                    self.stack.set_local(val, idx);
+                }
+                OpCode::PushLocal => {
+                    let idx = self.u8_from_byte();
+                    let val = self.stack.peek_local(idx)?;
+                    self.stack.push(val)?;
                 }
                 OpCode::StoreGlobal => {
                     let val = self.stack.pop()?;
@@ -295,10 +322,29 @@ impl VM {
                     self.stack.push(Value::Bool(result))?;
                 }
 
+                // Functions
+                OpCode::CallFunction => {
+                    // todo!();
+                    let fidx = self.u16_from_le();
+                    let func = self.functions[fidx as usize];
+                    let mut args: Vec<Value> = Vec::new();
+                    for _ in 0..func.arity {
+                        args.push(self.stack.pop()?);
+                    }
+                    args.reverse();
+                    self.stack.push_frame(args, func.locals as usize, self.ip)?;
+                    self.ip = func.address;
+                }
+                OpCode::Return => {
+                    let ret_val = self.stack.pop()?;
+                    self.ip = self.stack.pop_frame()?;
+                    self.stack.push(ret_val)?;
+                }
+
                 // Testing ops
                 OpCode::Print => {
                     let val = self.stack.pop()?;
-                    println!("{:?}", val);
+                    println!("printing: {:?}", val);
                 }
 
                 // No Op
@@ -308,6 +354,7 @@ impl VM {
                 }
             }
             // println!("Stack after {:?}: {:?}", opcode, self.stack);
+            // println!("locals {:?}", self.stack.frames);
             self.ip += 1;
             if self.ip >= self.code.len() {
                 break;

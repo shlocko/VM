@@ -1,48 +1,68 @@
-; generate n+2 th fib number
-pshc 10
-strg n
 
-pshc 0
-strg a
+# func fib 1
+# pshl arg0
+# pshc 2
+# subs
+# strl arg0
 
-pshc 1
-strg b
+# pshc 0
+# strl a
 
-labl loop
+# pshc 1
+# strl b
 
-; check n <= 0
-pshg n
-pshc 0
-lteq
-jmpt end
+# labl loop
 
-; temp = a + b
-pshg a
-pshg b
+# # check n <= 0
+# pshl arg0
+# pshc 0
+# lteq
+# jmpt end
+
+# # temp = a + b
+# pshl a
+# pshl b
+# adds
+# strl temp
+
+# # a = b
+# pshl b
+# strl a
+
+# # b = temp
+# pshl temp
+# strl b
+
+# # n = n - 1
+# pshl arg0
+# pshc 1
+# subs
+# strl arg0
+
+# pshl b
+
+# jump loop
+
+
+# labl end
+# # Result is in b
+# pshl b
+# endf
+
+# main
+
+# pshc 12callf fib
+# prnt
+
+
+func add 2
+pshl arg0
+pshl arg1
 adds
-strg temp
+endf
 
-; a = b
-pshg b
-strg a
-
-; b = temp
-pshg temp
-strg b
-
-; n = n - 1
-pshg n
+main
 pshc 1
-subs
-strg n
-
-pshg b
-prnt
-
-jump loop
-
-
-labl end
-; Result is in b
-pshg b
+pshc 2
+callf add
 prnt

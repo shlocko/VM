@@ -11,9 +11,16 @@ fn main() {
     match assembled {
         Ok(vec) => {
             println!("{:?}", vec);
-            let consts = vec.0;
-            let code = vec.1;
-            let bytecode = Bytecode { consts, code };
+            let entry = vec.0;
+            let consts = vec.1;
+            let functions = vec.2;
+            let code = vec.3;
+            let bytecode = Bytecode {
+                entry,
+                consts,
+                functions,
+                code,
+            };
             vm.load_code(bytecode);
             start = Instant::now();
             let result = vm.execute();

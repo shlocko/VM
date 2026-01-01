@@ -8,6 +8,7 @@ pub enum VMError {
     StackOverflow,
     StackUnderflow,
     InvalidStackValueType(Value, Value), // (Expected, Received)
+    NotInFrame,
 
     // Index Errors
     InvalidLocalIndex(u16),
@@ -32,6 +33,11 @@ pub enum AssemblerError {
     InvalidArgument(String),
     InvalidLiteral(String),
     InvalidJumpTarget(String),
+    InvalidFunctionLocation(String),
+    AccessLocalOutsideFunction(String),
+    InvalidFunctionEnd(String),
+    InvalidFunctionCall(String),
+    InvalidIdentifier(String),
     UnexpectedEof,
 }
 
