@@ -1,6 +1,6 @@
-use fvm::assembler::assemble;
 use fvm::bytecode::Bytecode;
 use fvm::vm::VM;
+use fvm::{assembler::assemble, value::Value};
 use std::time::{Duration, Instant};
 
 fn main() {
@@ -30,6 +30,7 @@ fn main() {
                 Ok(_) => {
                     println!("VM Returned OK.");
                     println!("Runtime: {:.8?}", end);
+                    println!("enum size: {}bytes", size_of::<Value>())
                 }
                 Err(e) => {
                     println!("VM Returned Error: {:?}", e);

@@ -40,7 +40,11 @@ impl Stack {
             return Err(VMError::StackUnderflow);
         }
         self.pointer -= 1;
-        return Ok(self.values[self.pointer].clone());
+        // return Ok(self.values[self.pointer].clone());
+        return Ok(std::mem::replace(
+            &mut self.values[self.pointer],
+            Value::default(),
+        ));
     }
     pub fn push_frame(
         &mut self,

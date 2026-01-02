@@ -21,9 +21,16 @@ pub enum VMError {
     InvalidOperandCount(u8, u8),
     InvalidOperandSize(u8, u8),
 
-    // Operand erros
+    // Operand Errors
     InvalidOperandType(Value, Value),
     InvalidUnaryOperandType(Value),
+
+    // Arithmetic Errors
+    DivisionByZero,
+
+    //Array Errors
+    IndexOutsideRangeOfArray(usize, usize), // (index, size)
+    CouldNotPopArray,
 }
 
 #[derive(Debug)]

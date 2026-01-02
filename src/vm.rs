@@ -5,7 +5,7 @@ use crate::error::VMError;
 use crate::function::Function;
 use crate::memory::{Stack, StackFrame};
 use crate::opcode::OpCode;
-use crate::value::Value;
+use crate::value::{HeapValue, Value};
 
 pub struct VM {
     stack: Stack,
@@ -73,30 +73,92 @@ impl VM {
                     let rop = self.stack.pop()?;
                     let lop = self.stack.pop()?;
                     // println!("stack after pops: {:?}", self.stack);
-                    match (lop, rop) {
+                    match (&lop, &rop) {
                         (Value::Int(l), Value::Int(r)) => {
                             let result = l + r;
                             self.stack.push(Value::Int(result))?;
-                            // println!("add: {} + {} = {}", l, r, result);
                         }
-                        _ => {
-                            println!("Wrong values");
+                        (Value::Float(l), Value::Float(r)) => {
+                            self.stack.push(Value::Float(l + r))?;
                         }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
                     }
                 }
                 OpCode::Sub => {
                     let rop = self.stack.pop()?;
                     let lop = self.stack.pop()?;
                     // println!("stack after pops: {:?}", self.stack);
-                    match (lop, rop) {
+                    match (&lop, &rop) {
                         (Value::Int(l), Value::Int(r)) => {
                             let result = l - r;
                             self.stack.push(Value::Int(result))?;
-                            // println!("add: {} + {} = {}", l, r, result);
                         }
-                        _ => {
-                            println!("Wrong values");
+                        (Value::Float(l), Value::Float(r)) => {
+                            self.stack.push(Value::Float(l - r))?;
                         }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                }
+                OpCode::Mul => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+
+                    match (&lop, &rop) {
+                        (Value::Int(l), Value::Int(r)) => {
+                            self.stack.push(Value::Int(l * r))?;
+                        }
+                        (Value::Float(l), Value::Float(r)) => {
+                            self.stack.push(Value::Float(l * r))?;
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                }
+                OpCode::Div => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+
+                    match (&lop, &rop) {
+                        (_, Value::Float(0.0) | Value::Int(0)) => {
+                            return Err(VMError::DivisionByZero);
+                        }
+                        (Value::Int(l), Value::Int(r)) => {
+                            self.stack.push(Value::Int(l / r))?;
+                        }
+                        (Value::Float(l), Value::Float(r)) => {
+                            self.stack.push(Value::Float(l / r))?;
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                }
+                OpCode::DivInt => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+
+                    match (&lop, &rop) {
+                        (_, Value::Float(0.0) | Value::Int(0)) => {
+                            return Err(VMError::DivisionByZero);
+                        }
+                        (Value::Int(l), Value::Int(r)) => {
+                            self.stack.push(Value::Int(l / r))?;
+                        }
+                        (Value::Float(l), Value::Float(r)) => {
+                            self.stack.push(Value::Int((l / r).floor() as i64))?;
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
+                    }
+                }
+                OpCode::Mod => {
+                    let rop = self.stack.pop()?;
+                    let lop = self.stack.pop()?;
+
+                    match (&lop, &rop) {
+                        (_, Value::Float(0.0) | Value::Int(0)) => {
+                            return Err(VMError::DivisionByZero);
+                        }
+                        (Value::Int(l), Value::Int(r)) => {
+                            self.stack.push(Value::Int(l % r))?;
+                        }
+                        _ => return Err(VMError::InvalidOperandType(lop, rop)),
                     }
                 }
 
@@ -137,6 +199,67 @@ impl VM {
                 }
                 OpCode::Pop => {
                     self.stack.pop()?;
+                }
+                OpCode::Box => {
+                    let val = self.stack.pop()?;
+                    self.stack.push(Value::new_box(val))?;
+                }
+                OpCode::Unbox => {
+                    let val = self.stack.pop()?;
+                    match val {
+                        Value::HeapValue(boxed) => {
+                            self.stack.push(boxed.borrow().clone())?;
+                        }
+                        _ => {
+                            return Err(VMError::InvalidUnaryOperandType(val));
+                        }
+                    }
+                }
+                OpCode::SetBox => {
+                    let val = self.stack.pop()?;
+                    let box_item = self.stack.pop()?;
+                    match box_item {
+                        Value::HeapValue(boxed) => {
+                            let mut borrowed = boxed.borrow_mut();
+                            *borrowed = val.clone();
+                        }
+                        _ => {
+                            return Err(VMError::InvalidUnaryOperandType(val));
+                        }
+                    }
+                }
+                OpCode::Array => {
+                    let arg = self.u8_from_byte();
+                    let mut vals: Vec<Value> = Vec::new();
+                    for n in 0..arg {
+                        vals.push(self.stack.pop()?);
+                    }
+                    vals.reverse();
+                    self.stack.push(Value::new_array(vals))?;
+                }
+                OpCode::ArraySet => {
+                    let idx = self.u32_from_le();
+                    let val = self.stack.pop()?;
+                    let arr = self.stack.pop()?;
+                    Value::set_to_array(idx as usize, val, arr)?;
+                }
+                OpCode::ArrayGet => {
+                    let idx = self.u32_from_le();
+                    let arr = self.stack.pop()?;
+                    self.stack.push(Value::get_from_array(idx as usize, arr)?)?;
+                }
+                OpCode::ArrayPush => {
+                    let val = self.stack.pop()?;
+                    let arr = self.stack.pop()?;
+                    Value::push_to_array(val, arr)?;
+                }
+                OpCode::ArrayPop => {
+                    let arr = self.stack.pop()?;
+                    self.stack.push(Value::pop_from_array(arr)?)?;
+                }
+                OpCode::ArrayLen => {
+                    let arr = self.stack.pop()?;
+                    self.stack.push(Value::array_len(arr)?)?;
                 }
 
                 // Control Flow
@@ -348,10 +471,9 @@ impl VM {
                 }
 
                 // No Op
-                OpCode::NoOp => {}
-                _ => {
-                    panic!("Invalid opcode")
-                }
+                OpCode::NoOp => {} // _ => {
+                                   //     panic!("Invalid opcode")
+                                   // }
             }
             // println!("Stack after {:?}: {:?}", opcode, self.stack);
             // println!("locals {:?}", self.stack.frames);

@@ -9,6 +9,7 @@ pub enum OpCode {
     Mul = 0x02,    // -- muls
     Div = 0x03,    // -- divs
     DivInt = 0x04, // -- divi
+    Mod = 0x05,
 
     // Memory/Stack Manipulation 0x10 - 0x25
     PushConst = 0x10,     // u16 -- pshc <literal>
@@ -18,6 +19,15 @@ pub enum OpCode {
     StoreGlobal = 0x14,   // u16 -- strg <ident>
     Pop = 0x15,           //     -- pops
     PushImmediate = 0x16, // i16 --
+    Box = 0x17,
+    Unbox = 0x18,
+    SetBox = 0x19,
+    Array = 0x1A,
+    ArraySet = 0x1B,
+    ArrayGet = 0x1C,
+    ArrayPush = 0x1D,
+    ArrayPop = 0x1E,
+    ArrayLen = 0x1F,
 
     // Control Flow 0x26 - 0x3F
     Jump = 0x26,        // u32 -- jump <label>
@@ -79,6 +89,15 @@ impl TryFrom<u8> for OpCode {
             0x14 => Ok(OpCode::StoreGlobal),
             0x15 => Ok(OpCode::Pop),
             0x16 => Ok(OpCode::PushImmediate),
+            0x17 => Ok(OpCode::Box),
+            0x18 => Ok(OpCode::Unbox),
+            0x19 => Ok(OpCode::SetBox),
+            0x1A => Ok(OpCode::Array),
+            0x1B => Ok(OpCode::ArraySet),
+            0x1C => Ok(OpCode::ArrayGet),
+            0x1D => Ok(OpCode::ArrayPush),
+            0x1E => Ok(OpCode::ArrayPop),
+            0x1F => Ok(OpCode::ArrayLen),
 
             // Control Flow
             0x26 => Ok(OpCode::Jump),

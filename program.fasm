@@ -62,8 +62,6 @@ endf
 
 main
 
-pshc 92
+pshc 5
 callf fib
-pshc 2
-callf addPlusOne
 prnt
