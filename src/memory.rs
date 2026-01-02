@@ -6,7 +6,6 @@ pub struct Stack {
     max_size: usize,
     pointer: usize,
     pub frames: Vec<StackFrame>,
-    frame_pointer: usize,
 }
 
 impl Stack {
@@ -16,7 +15,6 @@ impl Stack {
             max_size,
             pointer: 0,
             frames: Vec::new(),
-            frame_pointer: 0,
         };
 
         stack.values.resize(init_capacity, Value::default());
@@ -56,7 +54,6 @@ impl Stack {
         let frame = StackFrame {
             return_address,
             previous_frame_pointer: ptr,
-            locals,
         };
         for arg in args {
             self.push(arg)?;
@@ -97,5 +94,4 @@ impl Stack {
 pub struct StackFrame {
     return_address: usize,
     previous_frame_pointer: usize,
-    locals: usize,
 }

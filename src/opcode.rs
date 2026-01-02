@@ -126,39 +126,3 @@ impl TryFrom<u8> for OpCode {
         }
     }
 }
-
-pub struct StackEffect {
-    pop: u8,
-    push: u8,
-}
-
-// pub fn stack_impact(op: OpCode) -> StackEffect {
-//     match op {
-//         OpCode::Add => StackEffect { pop: 2, push: 1 },
-//         OpCode::Sub => StackEffect { pop: 2, push: 1 },
-//         OpCode::Mul => StackEffect { pop: 2, push: 1 },
-//         OpCode::Div => StackEffect { pop: 2, push: 1 },
-//         OpCode::DivInt => StackEffect { pop: 2, push: 1 },
-//         OpCode::PushConst => StackEffect { pop: 0, push: 1 },
-//         OpCode::PushLocal => StackEffect { pop: 0, push: 1 },
-//         OpCode::StoreLocal => StackEffect { pop: 1, push: 0 },
-//         OpCode::PushGlobal => StackEffect { pop: 0, push: 1 },
-//         OpCode::StoreGlobal => StackEffect { pop: 1, push: 0 },
-//         OpCode::Pop => StackEffect { pop: 1, push: 0 },
-//         OpCode::PushImmediate => StackEffect { pop: 0, push: 1 },
-//         OpCode::Jump => StackEffect { pop: 0, push: 0 },
-//         OpCode::JumpIfFalse => StackEffect { pop: 1, push: 0 },
-//         OpCode::JumpIfTrue => StackEffect { pop: 1, push: 0 },
-//         OpCode::Equal => StackEffect { pop: 2, push: 1 },
-//         OpCode::NotEqual => StackEffect { pop: 2, push: 1 },
-//         OpCode::LessThan => StackEffect { pop: 2, push: 1 },
-//         OpCode::GreaterThan => StackEffect { pop: 2, push: 1 },
-//         OpCode::GreaterEqual => StackEffect { pop: 2, push: 1 },
-//         OpCode::LessEqual => StackEffect { pop: 2, push: 1 },
-//         OpCode::Not => StackEffect { pop: 1, push: 1 },
-//         OpCode::LogicalAnd => StackEffect { pop: 2, push: 1 },
-//         OpCode::LogicalOr => StackEffect { pop: 2, push: 1 },
-//         OpCode::Print => StackEffect { pop: 1, push: 0 },
-//         OpCode::NoOp => StackEffect { pop: 0, push: 0 },
-//     }
-// }

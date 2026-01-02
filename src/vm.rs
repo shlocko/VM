@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
 use crate::bytecode::Bytecode;
 use crate::error::VMError;
 use crate::function::Function;
-use crate::memory::{Stack, StackFrame};
+use crate::memory::Stack;
 use crate::opcode::OpCode;
-use crate::value::{HeapValue, Value};
+use crate::value::Value;
 
 pub struct VM {
     stack: Stack,
@@ -231,7 +229,7 @@ impl VM {
                 OpCode::Array => {
                     let arg = self.u8_from_byte();
                     let mut vals: Vec<Value> = Vec::new();
-                    for n in 0..arg {
+                    for _n in 0..arg {
                         vals.push(self.stack.pop()?);
                     }
                     vals.reverse();
