@@ -534,7 +534,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 }
                 bin_vec.push(OpCode::LessEqual as u8);
             }
-            "bnot" => {
+            "not" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
@@ -542,7 +542,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 }
                 bin_vec.push(OpCode::Not as u8);
             }
-            "land" => {
+            "and" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
@@ -550,7 +550,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 }
                 bin_vec.push(OpCode::LogicalAnd as u8);
             }
-            "lgor" => {
+            "or" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
