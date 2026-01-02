@@ -170,7 +170,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                             bin_vec.push(OpCode::StoreLocal as u8);
                             bin_vec.push(*idx);
                         } else {
-                            println!("storelocal {}", ident);
+                            // println!("storelocal {}", ident);
                             let idx = current_function.locals.len();
                             current_function.locals.insert(ident, idx as u8);
                             bin_vec.push(OpCode::StoreLocal as u8);

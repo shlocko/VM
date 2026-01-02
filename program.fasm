@@ -62,7 +62,7 @@ endf
 
 main
 
-pshc 5
+pshc 92
 callf fib
 pshc 2
 callf addPlusOne
