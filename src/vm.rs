@@ -30,11 +30,13 @@ impl VM {
         self.ip += 2;
         return val;
     }
+    #[allow(dead_code)] // unused for now, will be later
     fn i16_from_le(&mut self) -> i16 {
         let val = i16::from_le_bytes([self.code[self.ip + 1], self.code[self.ip + 2]]);
         self.ip += 2;
         return val;
     }
+    #[allow(dead_code)] // unused for now, will be later
     fn bool_from_byte(&mut self) -> bool {
         let val = self.code[self.ip + 1];
         self.ip += 1;
