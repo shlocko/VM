@@ -2,7 +2,7 @@
 func fib 1
 pshl arg0
 pshc 2
-subs
+sub
 strl arg0
 
 pshc 0
@@ -11,7 +11,7 @@ strl a
 pshc 1
 strl b
 
-labl loop
+label loop
 
 # check n <= 0
 pshl arg0
@@ -22,7 +22,7 @@ jmpt end
 # temp = a + b
 pshl a
 pshl b
-adds
+add
 strl temp
 
 # a = b
@@ -36,7 +36,7 @@ strl b
 # n = n - 1
 pshl arg0
 pshc 1
-subs
+sub
 strl arg0
 
 pshl b
@@ -44,7 +44,7 @@ pshl b
 jump loop
 
 
-labl end
+label end
 # Result is in b
 pshl b
 endf
@@ -54,14 +54,36 @@ pshc 1
 strl toAdd
 pshl arg0
 pshl arg1
-adds
+add
 pshl toAdd
-adds
+add
 
 endf
 
 main
 
+# pshc 5
+# callf fib
+# prnt
+
+pshc 1
+pshc 2
+pshc 3
+array 3
+strg arr
+pshg arr
+pshc 0
 pshc 5
-callf fib
+arrayset
+pshg arr
+pshc 0
+arrayget
+prnt
+pshg arr
+pshc 1
+pshc 7789
+arrayset
+pshg arr
+pshc 1
+arrayget
 prnt

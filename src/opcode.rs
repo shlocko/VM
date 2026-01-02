@@ -19,10 +19,10 @@ pub enum OpCode {
     StoreGlobal = 0x14,   // u16 -- strg <ident>
     Pop = 0x15,           //     -- pops
     PushImmediate = 0x16, // i16 --
-    Box = 0x17,
-    Unbox = 0x18,
-    SetBox = 0x19,
-    Array = 0x1A,
+    Box = 0x17,           //     -- box
+    Unbox = 0x18,         //     -- unbox
+    SetBox = 0x19,        //     -- setbox
+    Array = 0x1A,         // u16 -- array <int>
     ArraySet = 0x1B,
     ArrayGet = 0x1C,
     ArrayPush = 0x1D,

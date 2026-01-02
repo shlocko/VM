@@ -238,15 +238,25 @@ impl VM {
                     self.stack.push(Value::new_array(vals))?;
                 }
                 OpCode::ArraySet => {
-                    let idx = self.u32_from_le();
                     let val = self.stack.pop()?;
+                    let idx = self.stack.pop()?;
                     let arr = self.stack.pop()?;
-                    Value::set_to_array(idx as usize, val, arr)?;
+                    match &idx {
+                        Value::Int(id) => {
+                            Value::set_to_array(*id as usize, val, arr)?;
+                        }
+                        _ => return Err(VMError::InvalidUnaryOperandType(idx)),
+                    }
                 }
                 OpCode::ArrayGet => {
-                    let idx = self.u32_from_le();
+                    let idx = self.stack.pop()?;
                     let arr = self.stack.pop()?;
-                    self.stack.push(Value::get_from_array(idx as usize, arr)?)?;
+                    match &idx {
+                        Value::Int(id) => {
+                            self.stack.push(Value::get_from_array(*id as usize, arr)?)?;
+                        }
+                        _ => return Err(VMError::InvalidUnaryOperandType(idx)),
+                    }
                 }
                 OpCode::ArrayPush => {
                     let val = self.stack.pop()?;

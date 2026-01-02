@@ -49,7 +49,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
             }
             "#" => {}
             "" => {}
-            "adds" => {
+            "add" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
@@ -57,7 +57,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 }
                 bin_vec.push(OpCode::Add as u8);
             }
-            "subs" => {
+            "sub" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
@@ -65,7 +65,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 }
                 bin_vec.push(OpCode::Sub as u8);
             }
-            "muls" => {
+            "mul" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
@@ -73,7 +73,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 }
                 bin_vec.push(OpCode::Mul as u8);
             }
-            "divs" => {
+            "div" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected zero arguments".to_string(),
@@ -246,9 +246,114 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 bin_vec.push(final_arg[0]);
                 bin_vec.push(final_arg[1]);
             }
-
+            "pop" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected zero arguments".to_string(),
+                    ));
+                }
+                bin_vec.push(OpCode::Pop as u8);
+            }
+            "box" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::Box as u8);
+            }
+            "unbox" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::Unbox as u8);
+            }
+            "setbox" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::SetBox as u8);
+            }
+            "array" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                let arg = parse_literal(data[1], linenum)?;
+                match arg {
+                    Value::Int(size) => {
+                        if size > 256 {
+                            return Err(AssemblerError::InvalidArgument(format!(
+                                "Expected array size <= 256 at line: {}",
+                                linenum
+                            )));
+                        }
+                        bin_vec.push(OpCode::Array as u8);
+                        bin_vec.push(size as u8);
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected numeric array size at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+            }
+            "arrayset" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::ArraySet as u8);
+            }
+            "arrayget" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::ArrayGet as u8);
+            }
+            "arraypush" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::ArrayPush as u8);
+            }
+            "arraypop" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::ArrayPop as u8);
+            }
+            "arraylen" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::ArrayLen as u8);
+            }
             // Control Flow
-            "labl" => {
+            "label" => {
                 if data.len() != 2 {
                     return Err(AssemblerError::InvalidArgument(
                         "Expected one argument".to_string(),
