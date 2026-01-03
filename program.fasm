@@ -87,3 +87,5 @@ pshg arr
 pshc 1
 arrayget
 prnt
+pshc "test"
+prnt

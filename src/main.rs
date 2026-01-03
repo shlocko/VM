@@ -9,12 +9,12 @@ fn main() {
     let mut vm = VM::new(256);
     let assembled = assemble();
     match assembled {
-        Ok(vec) => {
-            println!("{:?}", vec);
-            let entry = vec.0;
-            let consts = vec.1;
-            let functions = vec.2;
-            let code = vec.3;
+        Ok(data) => {
+            println!("{:?}", data);
+            let entry = data.0;
+            let consts = data.1;
+            let functions = data.2;
+            let code = data.3;
             let bytecode = Bytecode {
                 entry,
                 consts,
