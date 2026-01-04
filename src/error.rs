@@ -53,3 +53,25 @@ impl From<io::Error> for AssemblerError {
         AssemblerError::IoError(error)
     }
 }
+
+#[derive(Debug)]
+pub enum JEFError {
+    IoError(io::Error),
+    SerdeJson(serde_json::Error),
+    InvalidOpCode(String),
+    InvalidArgument(String),
+    DuplicateLabel(String),
+    InvalidJumpTarget(String),
+    CouldNotParse,
+}
+
+impl From<io::Error> for JEFError {
+    fn from(error: io::Error) -> Self {
+        JEFError::IoError(error)
+    }
+}
+impl From<serde_json::Error> for JEFError {
+    fn from(err: serde_json::Error) -> Self {
+        JEFError::SerdeJson(err)
+    }
+}

@@ -1,0 +1,57 @@
+{
+	"consts": [
+		{
+			"Int": 7
+		},
+		{
+			"Int": 8
+		}
+	],
+	"functions": [],
+	"code": [
+		[
+			"PushConst",
+			[
+				{
+					"Int": 0
+				}
+			]
+		],
+		[
+			"Jump",
+			[
+				{
+					"String": "target"
+				}
+			]
+		],
+		[
+			"PushConst",
+			[
+				{
+					"Int": 1
+				}
+			]
+		],
+		[
+			"Label",
+			[{
+				"String": "target"
+			}]
+		],
+		[
+			"PushImmediate",
+			[{
+				"Int": 123
+			}]
+		],
+		[
+			"Add",
+			[]
+		],
+		[
+			"Print",
+			[]
+		]
+	]
+}
