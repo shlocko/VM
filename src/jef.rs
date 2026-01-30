@@ -33,7 +33,11 @@ struct FixLabel {
 pub fn test_json() {
     let test_jef: JEF = JEF {
         consts: vec![JEFValue::Int(7), JEFValue::Int(8)],
-        functions: vec![],
+        functions: vec![Function {
+            address: 0,
+            arity: 1,
+            locals: 2,
+        }],
         code: vec![
             ("pshc".to_string(), vec![JEFValue::Int(1)]),
             ("pshc".to_string(), vec![JEFValue::Int(0)]),
@@ -42,7 +46,7 @@ pub fn test_json() {
         ],
     };
     let json_text = serde_json::to_string_pretty(&test_jef).unwrap();
-    println!("{}", &json_text);
+    println!("test_json {}", &json_text);
     let json_obj: JEF = serde_json::from_str(&json_text.as_str()).unwrap();
     println!("{:?}", json_obj);
 }

@@ -42,8 +42,9 @@ fn main() {
     //         println!("Error {:?}", er);
     //     }
     // }
-    test_json();
-    let assembled = assemble_json("test.json");
+
+    // test_json();
+    let assembled = assemble_json("program.jef");
     match assembled {
         Ok(data) => {
             println!("{:?}", data);
