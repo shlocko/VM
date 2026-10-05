@@ -129,9 +129,8 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                 bytecode.code.push(OpCode::PushLocal as u8);
                 match code.1[0] {
                     JEFValue::Int(idx) => {
-                        let arg = u16::to_le_bytes(idx as u16);
-                        bytecode.code.push(arg[0]);
-                        bytecode.code.push(arg[1]);
+                        let arg = idx as u8;
+                        bytecode.code.push(arg);
                     }
                     _ => {
                         return Err(JEFError::InvalidArgument(format!(
@@ -146,9 +145,8 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                 bytecode.code.push(OpCode::StoreLocal as u8);
                 match code.1[0] {
                     JEFValue::Int(idx) => {
-                        let arg = u16::to_le_bytes(idx as u16);
-                        bytecode.code.push(arg[0]);
-                        bytecode.code.push(arg[1]);
+                        let arg = idx as u8;
+                        bytecode.code.push(arg);
                     }
                     _ => {
                         return Err(JEFError::InvalidArgument(format!(

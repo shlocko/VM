@@ -1,7 +1,7 @@
 
 func fib 1
 pshl arg0
-pshc 2
+pshc 1
 sub
 strl arg0
 
@@ -62,30 +62,7 @@ endf
 
 main
 
-# pshc 5
-# callf fib
-# prnt
+pshc 10
+callf fib
+prnt
 
-pshc 1
-pshc 2
-pshc 3
-array 3
-strg arr
-pshg arr
-pshc 0
-pshc 5
-arrayset
-pshg arr
-pshc 0
-arrayget
-prnt
-pshg arr
-pshc 1
-pshc 7789
-arrayset
-pshg arr
-pshc 1
-arrayget
-prnt
-pshc "test"
-prnt
