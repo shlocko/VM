@@ -10,12 +10,23 @@ use crate::{
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum JEFValue {
     Int(i64),
     Float(f64),
     String(String),
     Bool(bool),
+}
+
+impl JEFValue {
+    pub fn to_value(self) -> Value {
+        match self {
+            JEFValue::Int(v) => Value::Int(v),
+            JEFValue::Float(v) => Value::Float(v),
+            JEFValue::String(v) => Value::String(HeapString::new(v)),
+            JEFValue::Bool(v) => Value::Bool(v),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -49,6 +60,10 @@ pub fn test_json() {
     println!("test_json {}", &json_text);
     let json_obj: JEF = serde_json::from_str(&json_text.as_str()).unwrap();
     println!("{:?}", json_obj);
+}
+
+pub fn new_jef(op: &str, arr: &[JEFValue]) -> (String, Vec<JEFValue>) {
+    return (op.to_string(), arr.to_vec());
 }
 
 pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {

@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use crate::error::VMError;
+use crate::{error::VMError, jef::JEFValue};
 
 pub type HeapString = Rc<String>;
 pub type HeapVec = Rc<RefCell<Vec<Value>>>;
@@ -84,6 +84,16 @@ impl Value {
                 return Ok(Value::Int(unboxed.len() as i64));
             }
             _ => return Err(VMError::InvalidUnaryOperandType(arr)),
+        }
+    }
+
+    pub fn to_jef(self) -> JEFValue {
+        match self {
+            Value::Int(v) => JEFValue::Int(v),
+            Value::Float(v) => JEFValue::Float(v),
+            Value::Bool(v) => JEFValue::Bool(v),
+            Value::String(v) => JEFValue::String((*v).clone()),
+            _ => panic!(),
         }
     }
 }

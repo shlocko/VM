@@ -1,6 +1,7 @@
 pub mod assembler;
 pub mod bytecode;
 pub mod error;
+pub mod fasm_jef;
 pub mod function;
 pub mod jef;
 pub mod memory;
