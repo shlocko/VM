@@ -1,7 +1,8 @@
-use fvm::bytecode::Bytecode;
 use fvm::jef::{assemble_json, test_json};
 use fvm::vm::VM;
 use fvm::{assembler::assemble, value::Value};
+use std::fs::File;
+use std::io::BufWriter;
 use std::time::{Duration, Instant};
 
 fn main() {
@@ -44,6 +45,14 @@ fn main() {
     // }
 
     // test_json();
+    let jef = fvm::fasm_jef::assemble().unwrap();
+    let json_text = serde_json::to_string_pretty(&jef).unwrap();
+
+    let writer = BufWriter::new(File::create("program.jef").unwrap());
+    serde_json::to_writer_pretty(writer, &jef);
+
+    println!("compiled fasm->jef: {}", &json_text);
+
     let assembled = assemble_json("program.jef");
     match assembled {
         Ok(data) => {

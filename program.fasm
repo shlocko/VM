@@ -1,54 +1,4 @@
 
-func fib 1
-pshl arg0
-pshc 1
-sub
-strl arg0
-
-pshc 0
-strl a
-
-pshc 1
-strl b
-
-label loop
-
-# check n <= 0
-pshl arg0
-pshc 0
-lteq
-jmpt end
-
-# temp = a + b
-pshl a
-pshl b
-add
-strl temp
-
-# a = b
-pshl b
-strl a
-
-# b = temp
-pshl temp
-strl b
-
-# n = n - 1
-pshl arg0
-pshc 1
-sub
-strl arg0
-
-pshl b
-
-jump loop
-
-
-label end
-# Result is in b
-pshl b
-endf
-
 func addPlusOne 2
 pshc 1
 strl toAdd
@@ -62,7 +12,8 @@ endf
 
 main
 
-pshc 10
-callf fib
+pshc 1
+pshc 2
+callf addPlusOne
 prnt
 

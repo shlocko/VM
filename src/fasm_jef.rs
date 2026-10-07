@@ -1,6 +1,6 @@
 use crate::error::AssemblerError;
 use crate::function::Function;
-use crate::jef::{new_jef, JEFValue};
+use crate::jef::{new_jef, JEFValue, JEF};
 use crate::opcode::OpCode;
 use crate::value::{HeapString, Value};
 use std::collections::HashMap;
@@ -18,7 +18,7 @@ struct CurFunc {
     done: bool,
 }
 
-pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), AssemblerError> {
+pub fn assemble() -> Result<JEF, AssemblerError> {
     let file = File::open("program.fasm")?;
     let reader = BufReader::new(file);
     let mut linenum = 0;
@@ -29,7 +29,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
 
     let mut globals_names: HashMap<String, u16> = HashMap::new();
     let mut labels: HashMap<String, u32> = HashMap::new();
-    let mut fix_labels: Vec<FixLabel> = Vec::new();
+    // let mut fix_labels: Vec<FixLabel> = Vec::new();
     let mut func_names: HashMap<String, usize> = HashMap::new();
     let mut entry = 0;
     let mut current_function: CurFunc = CurFunc {
@@ -53,7 +53,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(new_jef("add", &[]));
+                bin_vec.push(new_jef("Add", &[]));
             }
             "sub" => {
                 if data.len() > 1 {
@@ -98,20 +98,20 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 let idx: u16;
                 match arg {
                     Ok(val) => {
-                        let index = consts.iter().position(|x| *x == val.to_jef());
+                        let index = consts.iter().position(|x| *x == val.clone().to_jef());
                         match index {
                             Some(val) => {
                                 idx = val as u16;
                             }
                             None => {
-                                consts.push(val.to_jef());
+                                consts.push(val.clone().to_jef());
                                 idx = (consts.len() - 1) as u16;
                             }
                         }
                     }
                     Err(e) => return Err(e),
                 }
-                bin_vec.push(new_jef("PushConst", &[JEFValue::Int(idx as i64)]))
+                bin_vec.push(new_jef("PushConst", &[JEFValue::Int(idx.into())]))
             }
             "pshl" => {
                 if data.len() != 2 {
@@ -130,7 +130,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 match val {
                     Value::Ident(ident) => {
                         if let Some(idx) = current_function.locals.get(&ident) {
-                            bin_vec.push(new_jef("PushLocal", &[JEFValue::Int(*idx as i64)]))
+                            bin_vec.push(new_jef("PushLocal", &[JEFValue::Int((*idx).into())]))
                         } else {
                             return Err(AssemblerError::InvalidIdentifier(format!(
                                 "Access local that isn't defined at line: {}",
@@ -162,7 +162,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 match val {
                     Value::Ident(ident) => {
                         if let Some(idx) = current_function.locals.get(&ident) {
-                            bin_vec.push(new_jef("StoreLocal", &[JEFValue::Int(*idx as i64)]));
+                            bin_vec.push(new_jef("StoreLocal", &[JEFValue::Int((*idx).into())]));
                         } else {
                             // println!("storelocal {}", ident);
                             let idx = current_function.locals.len();
@@ -203,7 +203,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         )));
                     }
                 }
-                bin_vec.push(new_jef("StoreGlobal", &[JEFValue::Int(idx as i64)]))
+                bin_vec.push(new_jef("StoreGlobal", &[JEFValue::Int(idx.into())]))
             }
             "pshg" => {
                 if data.len() != 2 {
@@ -231,7 +231,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         )));
                     }
                 }
-                bin_vec.push(new_jef("StoreGlobal", &[JEFValue::Int(idx as i64)]))
+                bin_vec.push(new_jef("StoreGlobal", &[JEFValue::Int(idx.into())]))
             }
             "pop" => {
                 if data.len() > 1 {
@@ -283,8 +283,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                                 linenum
                             )));
                         }
-                        bin_vec.push(OpCode::Array as u8);
-                        bin_vec.push(size as u8);
+                        bin_vec.push(new_jef("Array", &[JEFValue::Int(size)]));
                     }
                     _ => {
                         return Err(AssemblerError::InvalidArgument(format!(
@@ -301,7 +300,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         linenum
                     )));
                 }
-                bin_vec.push(OpCode::ArraySet as u8);
+                bin_vec.push(new_jef("ArraySet", &[]));
             }
             "arrayget" => {
                 if data.len() > 1 {
@@ -310,7 +309,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         linenum
                     )));
                 }
-                bin_vec.push(OpCode::ArrayGet as u8);
+                bin_vec.push(new_jef("ArrayGet", &[]));
             }
             "arraypush" => {
                 if data.len() > 1 {
@@ -319,7 +318,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         linenum
                     )));
                 }
-                bin_vec.push(OpCode::ArrayPush as u8);
+                bin_vec.push(new_jef("ArrayPush", &[]));
             }
             "arraypop" => {
                 if data.len() > 1 {
@@ -328,7 +327,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         linenum
                     )));
                 }
-                bin_vec.push(OpCode::ArrayPop as u8);
+                bin_vec.push(new_jef("ArrayPop", &[]));
             }
             "arraylen" => {
                 if data.len() > 1 {
@@ -337,7 +336,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         linenum
                     )));
                 }
-                bin_vec.push(OpCode::ArrayLen as u8);
+                bin_vec.push(new_jef("ArrayLen", &[]));
             }
             // Control Flow
             "label" => {
@@ -347,10 +346,10 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                     ));
                 }
                 let arg = parse_literal(data[1], linenum)?;
-                bin_vec.push(OpCode::NoOp as u8);
                 match arg {
                     Value::Ident(name) => {
-                        labels.insert(name, (bin_vec.len() - 1) as u32);
+                        // labels.insert(name, (bin_vec.len() - 1) as u32);
+                        bin_vec.push(new_jef("Label", &[JEFValue::String(name)]));
                     }
                     _ => {
                         return Err(AssemblerError::InvalidArgument(format!(
@@ -369,25 +368,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 let arg = parse_literal(data[1], linenum)?;
                 match arg {
                     Value::Ident(name) => {
-                        // labels.insert(name, (bin_vec.len() - 1) as u32);
-                        bin_vec.push(OpCode::Jump as u8);
-                        if let Some(target) = labels.get(&name) {
-                            let location = u32::to_le_bytes(*target);
-                            bin_vec.push(location[0]);
-                            bin_vec.push(location[1]);
-                            bin_vec.push(location[2]);
-                            bin_vec.push(location[3]);
-                        } else {
-                            fix_labels.push(FixLabel {
-                                offset: bin_vec.len(),
-                                label: name,
-                            });
-                            let location = u32::to_le_bytes(0);
-                            bin_vec.push(location[0]);
-                            bin_vec.push(location[1]);
-                            bin_vec.push(location[2]);
-                            bin_vec.push(location[3]);
-                        };
+                        bin_vec.push(new_jef("Jump", &[JEFValue::String(name)]));
                     }
                     _ => {
                         return Err(AssemblerError::InvalidArgument(format!(
@@ -406,25 +387,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 let arg = parse_literal(data[1], linenum)?;
                 match arg {
                     Value::Ident(name) => {
-                        // labels.insert(name, (bin_vec.len() - 1) as u32);
-                        bin_vec.push(OpCode::JumpIfFalse as u8);
-                        if let Some(target) = labels.get(&name) {
-                            let location = u32::to_le_bytes(*target);
-                            bin_vec.push(location[0]);
-                            bin_vec.push(location[1]);
-                            bin_vec.push(location[2]);
-                            bin_vec.push(location[3]);
-                        } else {
-                            fix_labels.push(FixLabel {
-                                offset: bin_vec.len(),
-                                label: name,
-                            });
-                            let location = u32::to_le_bytes(0);
-                            bin_vec.push(location[0]);
-                            bin_vec.push(location[1]);
-                            bin_vec.push(location[2]);
-                            bin_vec.push(location[3]);
-                        };
+                        bin_vec.push(new_jef("JumpIfFalse", &[JEFValue::String(name)]));
                     }
                     _ => {
                         return Err(AssemblerError::InvalidArgument(format!(
@@ -443,25 +406,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 let arg = parse_literal(data[1], linenum)?;
                 match arg {
                     Value::Ident(name) => {
-                        // labels.insert(name, (bin_vec.len() - 1) as u32);
-                        bin_vec.push(OpCode::JumpIfTrue as u8);
-                        if let Some(target) = labels.get(&name) {
-                            let location = u32::to_le_bytes(*target);
-                            bin_vec.push(location[0]);
-                            bin_vec.push(location[1]);
-                            bin_vec.push(location[2]);
-                            bin_vec.push(location[3]);
-                        } else {
-                            fix_labels.push(FixLabel {
-                                offset: bin_vec.len(),
-                                label: name,
-                            });
-                            let location = u32::to_le_bytes(0);
-                            bin_vec.push(location[0]);
-                            bin_vec.push(location[1]);
-                            bin_vec.push(location[2]);
-                            bin_vec.push(location[3]);
-                        };
+                        bin_vec.push(new_jef("JumpIfTrue", &[JEFValue::String(name)]));
                     }
                     _ => {
                         return Err(AssemblerError::InvalidArgument(format!(
@@ -479,7 +424,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::Equal as u8);
+                bin_vec.push(new_jef("Equal", &[]));
             }
             "nteq" => {
                 if data.len() > 1 {
@@ -487,7 +432,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::NotEqual as u8);
+                bin_vec.push(new_jef("NotEqual", &[]));
             }
             "lsth" => {
                 if data.len() > 1 {
@@ -495,7 +440,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::LessThan as u8);
+                bin_vec.push(new_jef("LessThan", &[]));
             }
             "grth" => {
                 if data.len() > 1 {
@@ -503,7 +448,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::GreaterThan as u8);
+                bin_vec.push(new_jef("GreaterThan", &[]));
             }
             "gteq" => {
                 if data.len() > 1 {
@@ -511,7 +456,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::GreaterEqual as u8);
+                bin_vec.push(new_jef("GreaterEqual", &[]));
             }
             "lteq" => {
                 if data.len() > 1 {
@@ -519,7 +464,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::LessEqual as u8);
+                bin_vec.push(new_jef("LessEqual", &[]));
             }
             "not" => {
                 if data.len() > 1 {
@@ -527,7 +472,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::Not as u8);
+                bin_vec.push(new_jef("Not", &[]));
             }
             "and" => {
                 if data.len() > 1 {
@@ -535,7 +480,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::LogicalAnd as u8);
+                bin_vec.push(new_jef("LogicalAnd", &[]));
             }
             "or" => {
                 if data.len() > 1 {
@@ -543,7 +488,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::LogicalOr as u8);
+                bin_vec.push(new_jef("LogicalOr", &[]));
             }
 
             // Functions
@@ -571,7 +516,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                                 arity: num,
                                 locals: 0,
                             });
-                            bin_vec.push(OpCode::NoOp as u8);
+                            bin_vec.push(new_jef("NoOp", &[]));
                             current_function.done = false;
                             current_function.locals = HashMap::new();
                             current_function.name = id;
@@ -615,7 +560,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 } else {
                     println!("funcnames: {:?}, {:?}", func_names, current_function.name);
                 }
-                bin_vec.push(OpCode::Return as u8);
+                bin_vec.push(new_jef("Return", &[]));
             }
             "callf" => {
                 if data.len() != 2 {
@@ -628,10 +573,11 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 match val {
                     Value::Ident(ident) => {
                         if let Some(idx) = func_names.get(&ident) {
-                            bin_vec.push(OpCode::CallFunction as u8);
-                            let arg = u16::to_le_bytes(*idx as u16);
-                            bin_vec.push(arg[0]);
-                            bin_vec.push(arg[1]);
+                            // bin_vec.push(OpCode::CallFunction as u8);
+                            // let arg = u16::to_le_bytes(*idx as u16);
+                            // bin_vec.push(arg[0]);
+                            // bin_vec.push(arg[1]);
+                            bin_vec.push(new_jef("CallFunction", &[JEFValue::Int(*idx as i64)]))
                         } else {
                             return Err(AssemblerError::InvalidFunctionCall(format!(
                                 "Function doesn't exist at line: {}",
@@ -655,7 +601,7 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                         "Expected zero arguments".to_string(),
                     ));
                 }
-                bin_vec.push(OpCode::Print as u8);
+                bin_vec.push(new_jef("Print", &[]));
             }
             _ => {
                 return Err(AssemblerError::InvalidOpcode(format!(
@@ -666,22 +612,26 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
         }
     }
 
-    for label in fix_labels {
-        if let Some(loc) = labels.get(&label.label) {
-            let bytes = u32::to_le_bytes(*loc);
-            bin_vec[label.offset] = bytes[0];
-            bin_vec[label.offset + 1] = bytes[1];
-            bin_vec[label.offset + 2] = bytes[2];
-            bin_vec[label.offset + 3] = bytes[3];
-        } else {
-            return Err(AssemblerError::InvalidJumpTarget(format!(
-                "Invalid jump target: {}",
-                label.label
-            )));
-        }
-    }
+    // for label in fix_labels {
+    //     if let Some(loc) = labels.get(&label.label) {
+    //         let bytes = u32::to_le_bytes(*loc);
+    //         bin_vec[label.offset] = bytes[0];
+    //         bin_vec[label.offset + 1] = bytes[1];
+    //         bin_vec[label.offset + 2] = bytes[2];
+    //         bin_vec[label.offset + 3] = bytes[3];
+    //     } else {
+    //         return Err(AssemblerError::InvalidJumpTarget(format!(
+    //             "Invalid jump target: {}",
+    //             label.label
+    //         )));
+    //     }
+    // }
 
-    Ok((entry, consts, functions, bin_vec))
+    Ok(JEF {
+        consts,
+        functions,
+        code: bin_vec,
+    })
 }
 
 fn parse_literal(s: &str, line: i32) -> Result<Value, AssemblerError> {

@@ -279,6 +279,7 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
             // Control Flow
             "Jump" => {
                 check_arg_count(&code, 1, code_idx)?;
+                println!("label argument: {:?}", code.1[0].clone());
                 bytecode.code.push(OpCode::Jump as u8);
                 match code.1[0].clone() {
                     JEFValue::String(label) => {
@@ -303,7 +304,7 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                     }
                     _ => {
                         return Err(JEFError::InvalidArgument(format!(
-                            "Expected name for label at position: {}",
+                            "Expected name for label at position: {}(jump)",
                             code_idx
                         )));
                     }
@@ -469,7 +470,7 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                     }
                     _ => {
                         return Err(JEFError::InvalidArgument(format!(
-                            "Expected name for label at position: {}",
+                            "Expected name for label at position: {}(label)",
                             code_idx
                         )));
                     }
