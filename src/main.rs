@@ -45,6 +45,7 @@ fn main() {
     // }
 
     // test_json();
+
     let jef = fvm::fasm_jef::assemble().unwrap();
     let json_text = serde_json::to_string_pretty(&jef).unwrap();
 

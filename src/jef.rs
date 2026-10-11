@@ -419,7 +419,7 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                 match code.1[0] {
                     JEFValue::Int(idx) => {
                         let location = bytecode.code.len();
-                        bytecode.functions[idx as usize].address = location;
+                        // bytecode.functions[idx as usize].address = location;
                         bytecode.code.push(OpCode::CallFunction as u8);
                         let arg = u16::to_le_bytes(idx as u16);
                         bytecode.code.push(arg[0]);

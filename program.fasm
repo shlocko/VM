@@ -12,7 +12,7 @@ endf
 
 main
 
-pshc 1
+pshc 3
 pshc 2
 callf addPlusOne
 prnt
