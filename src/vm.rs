@@ -470,9 +470,15 @@ impl VM {
                     self.ip = func.address;
                 }
                 OpCode::Return => {
-                    let ret_val = self.stack.pop()?;
-                    self.ip = self.stack.pop_frame()?;
-                    self.stack.push(ret_val)?;
+                    if self.stack.frames.last().unwrap().get_top()
+                        == self.stack.clone().get_pointer()
+                    {
+                        self.ip = self.stack.pop_frame()?;
+                    } else {
+                        let ret_val = self.stack.pop()?;
+                        self.ip = self.stack.pop_frame()?;
+                        self.stack.push(ret_val)?;
+                    }
                 }
 
                 // Testing ops
@@ -492,6 +498,7 @@ impl VM {
             if self.ip >= self.code.len() {
                 break;
             }
+            // println!("Stack: {:?}", self.stack)
         }
         Ok(())
     }

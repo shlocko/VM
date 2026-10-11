@@ -1,6 +1,6 @@
 use crate::{error::VMError, value::Value};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Stack {
     values: Vec<Value>,
     max_size: usize,
@@ -20,6 +20,9 @@ impl Stack {
         stack.values.resize(init_capacity, Value::default());
 
         return stack;
+    }
+    pub fn get_pointer(self) -> usize {
+        return self.pointer;
     }
     pub fn push(&mut self, val: Value) -> Result<(), VMError> {
         if self.pointer < self.max_size {
@@ -54,12 +57,14 @@ impl Stack {
         let frame = StackFrame {
             return_address,
             previous_frame_pointer: ptr,
+            top: 0,
         };
         for arg in args {
             self.push(arg)?;
         }
         self.frames.push(frame);
         self.pointer += locals;
+        self.frames.last_mut().unwrap().top = self.pointer;
         if self.pointer >= self.values.len() {
             self.values.resize(self.values.len() * 2, Value::default());
         }
@@ -90,8 +95,15 @@ impl Stack {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct StackFrame {
     return_address: usize,
     previous_frame_pointer: usize,
+    top: usize,
+}
+
+impl StackFrame {
+    pub fn get_top(self) -> usize {
+        return self.top;
+    }
 }

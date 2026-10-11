@@ -7,10 +7,10 @@
       "Int": 8
     },
     {
-      "Int": 3
+      "Int": 2
     },
     {
-      "Int": 2
+      "Int": 3
     }
   ],
   "functions": [
@@ -151,7 +151,23 @@
       "PushConst",
       [
         {
+          "Int": 0
+        }
+      ]
+    ],
+    [
+      "PushConst",
+      [
+        {
           "Int": 2
+        }
+      ]
+    ],
+    [
+      "CallFunction",
+      [
+        {
+          "Int": 1
         }
       ]
     ],
@@ -167,7 +183,7 @@
       "CallFunction",
       [
         {
-          "Int": 1
+          "Int": 0
         }
       ]
     ],

@@ -23,9 +23,11 @@ endf
 
 main
 
+
 callf test
-pshc 3
+pshc 1
 pshc 2
 callf add
+pshc 3
+callf addPlusOne
 prnt
-
