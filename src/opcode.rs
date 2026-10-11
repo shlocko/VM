@@ -60,9 +60,14 @@ impl OpCode {
     // Return a vector whose values are the sizes, in bytes, of the args the opcode accepts
     pub fn arg_sizecount(&self) -> Vec<usize> {
         match self {
-            OpCode::PushConst => vec![2],
-            OpCode::PushImmediate => vec![2],
-            OpCode::PushGlobal => vec![2],
+            OpCode::Jump | OpCode::JumpIfFalse | OpCode::JumpIfTrue => vec![4],
+            OpCode::PushConst
+            | OpCode::PushImmediate
+            | OpCode::PushGlobal
+            | OpCode::StoreGlobal
+            | OpCode::Array
+            | OpCode::CallFunction => vec![2],
+            OpCode::StoreLocal | OpCode::PushLocal => vec![1],
             _ => vec![0],
         }
     }
@@ -124,5 +129,15 @@ impl TryFrom<u8> for OpCode {
             0xFF => Ok(OpCode::NoOp),
             _ => Err(VMError::InvalidOpcode(value)),
         }
+    }
+}
+pub fn op_to_arg_size(op: &str) -> usize {
+    match op {
+        "Jump" | "JumpIfFalse" | "JumpIfTrue" => 4,
+        "PushConst" | "PushImmediate" | "PushGlobal" | "StoreGlobal" | "Array" | "CallFunction" => {
+            2
+        }
+        "StoreLocal" | "PushLocal" => 1,
+        _ => 0,
     }
 }

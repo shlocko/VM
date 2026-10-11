@@ -4,6 +4,9 @@
       "Int": 1
     },
     {
+      "Int": 8
+    },
+    {
       "Int": 3
     },
     {
@@ -15,6 +18,16 @@
       "address": 0,
       "arity": 2,
       "locals": 3
+    },
+    {
+      "address": 9,
+      "arity": 2,
+      "locals": 2
+    },
+    {
+      "address": 14,
+      "arity": 0,
+      "locals": 0
     }
   ],
   "code": [
@@ -75,7 +88,35 @@
       []
     ],
     [
-      "Main",
+      "NoOp",
+      []
+    ],
+    [
+      "PushLocal",
+      [
+        {
+          "Int": 0
+        }
+      ]
+    ],
+    [
+      "PushLocal",
+      [
+        {
+          "Int": 1
+        }
+      ]
+    ],
+    [
+      "Add",
+      []
+    ],
+    [
+      "Return",
+      []
+    ],
+    [
+      "NoOp",
       []
     ],
     [
@@ -83,6 +124,26 @@
       [
         {
           "Int": 1
+        }
+      ]
+    ],
+    [
+      "Print",
+      []
+    ],
+    [
+      "Return",
+      []
+    ],
+    [
+      "Main",
+      []
+    ],
+    [
+      "CallFunction",
+      [
+        {
+          "Int": 2
         }
       ]
     ],
@@ -95,10 +156,18 @@
       ]
     ],
     [
+      "PushConst",
+      [
+        {
+          "Int": 3
+        }
+      ]
+    ],
+    [
       "CallFunction",
       [
         {
-          "Int": 0
+          "Int": 1
         }
       ]
     ],

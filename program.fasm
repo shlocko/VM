@@ -10,10 +10,22 @@ add
 
 endf
 
+func add 2
+pshl arg0
+pshl arg1
+add
+endf
+
+func test 0
+pshc 8
+prnt
+endf
+
 main
 
+callf test
 pshc 3
 pshc 2
-callf addPlusOne
+callf add
 prnt
 

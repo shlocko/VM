@@ -4,7 +4,7 @@ use crate::{
     bytecode::Bytecode,
     error::JEFError,
     function::Function,
-    opcode::OpCode,
+    opcode::{op_to_arg_size, OpCode},
     value::{HeapString, Value},
 };
 
@@ -67,6 +67,7 @@ pub fn new_jef(op: &str, arr: &[JEFValue]) -> (String, Vec<JEFValue>) {
 }
 
 pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
+    let mut offsets: Vec<usize> = vec![];
     let mut fix_labels: Vec<FixLabel> = Vec::new();
     let mut labels: HashMap<String, u32> = HashMap::new();
     let mut bytecode: Bytecode = Bytecode {
@@ -95,6 +96,7 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
 
     let mut code_idx = 0;
     for code in jef.code {
+        offsets.push((offsets.last().copied().unwrap_or(0)) + op_to_arg_size(code.0.as_str()));
         match code.0.as_str() {
             "Add" => {
                 check_arg_count(&code, 0, code_idx)?;
@@ -418,8 +420,6 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                 check_arg_count(&code, 1, code_idx)?;
                 match code.1[0] {
                     JEFValue::Int(idx) => {
-                        let location = bytecode.code.len();
-                        // bytecode.functions[idx as usize].address = location;
                         bytecode.code.push(OpCode::CallFunction as u8);
                         let arg = u16::to_le_bytes(idx as u16);
                         bytecode.code.push(arg[0]);
@@ -500,6 +500,11 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                 label.label
             )));
         }
+    }
+    println!("offsets {:?}", offsets);
+    for f in &mut bytecode.functions {
+        println!("{}", offsets[f.address]);
+        f.address = offsets[f.address] + f.address;
     }
     return Ok(bytecode);
 }

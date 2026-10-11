@@ -462,6 +462,7 @@ impl VM {
                     let func = self.functions[fidx as usize];
                     let mut args: Vec<Value> = Vec::new();
                     for _ in 0..func.arity {
+                        println!("Popped");
                         args.push(self.stack.pop()?);
                     }
                     args.reverse();
