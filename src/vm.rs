@@ -313,7 +313,17 @@ impl VM {
                                 result = true;
                             }
                         }
+                        (Value::Float(l), Value::Float(r)) => {
+                            if l == r {
+                                result = true;
+                            }
+                        }
                         (Value::Bool(l), Value::Bool(r)) => {
+                            if l == r {
+                                result = true;
+                            }
+                        }
+                        (Value::String(l), Value::String(r)) => {
                             if l == r {
                                 result = true;
                             }
@@ -332,7 +342,17 @@ impl VM {
                                 result = true;
                             }
                         }
+                        (Value::Float(l), Value::Float(r)) => {
+                            if l != r {
+                                result = true;
+                            }
+                        }
                         (Value::Bool(l), Value::Bool(r)) => {
+                            if l != r {
+                                result = true;
+                            }
+                        }
+                        (Value::String(l), Value::String(r)) => {
                             if l != r {
                                 result = true;
                             }
