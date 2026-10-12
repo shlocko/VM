@@ -231,7 +231,7 @@ pub fn assemble() -> Result<JEF, AssemblerError> {
                         )));
                     }
                 }
-                bin_vec.push(new_jef("StoreGlobal", &[JEFValue::Int(idx.into())]))
+                bin_vec.push(new_jef("PushGlobal", &[JEFValue::Int(idx.into())]))
             }
             "pop" => {
                 if data.len() > 1 {

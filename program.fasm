@@ -16,7 +16,7 @@ pshl arg1
 add
 endf
 
-func test 0
+func test 1
 pshc 8
 prnt
 endf
@@ -24,7 +24,10 @@ endf
 main
 
 
+pshc 1
+pshc 79
 callf test
+prnt
 pshc 1
 pshc 2
 callf add

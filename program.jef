@@ -7,6 +7,9 @@
       "Int": 8
     },
     {
+      "Int": 79
+    },
+    {
       "Int": 2
     },
     {
@@ -26,8 +29,8 @@
     },
     {
       "address": 14,
-      "arity": 0,
-      "locals": 0
+      "arity": 1,
+      "locals": 1
     }
   ],
   "code": [
@@ -140,14 +143,6 @@
       []
     ],
     [
-      "CallFunction",
-      [
-        {
-          "Int": 2
-        }
-      ]
-    ],
-    [
       "PushConst",
       [
         {
@@ -167,7 +162,19 @@
       "CallFunction",
       [
         {
-          "Int": 1
+          "Int": 2
+        }
+      ]
+    ],
+    [
+      "Print",
+      []
+    ],
+    [
+      "PushConst",
+      [
+        {
+          "Int": 0
         }
       ]
     ],
@@ -176,6 +183,22 @@
       [
         {
           "Int": 3
+        }
+      ]
+    ],
+    [
+      "CallFunction",
+      [
+        {
+          "Int": 1
+        }
+      ]
+    ],
+    [
+      "PushConst",
+      [
+        {
+          "Int": 4
         }
       ]
     ],

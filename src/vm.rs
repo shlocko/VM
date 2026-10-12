@@ -168,7 +168,7 @@ impl VM {
                     self.stack.push(self.consts[val as usize].clone())?;
                 }
                 OpCode::PushImmediate => {
-                    let val = self.u16_from_le();
+                    let val = self.i16_from_le();
 
                     self.stack.push(Value::Int(val as i64))?;
                 }
@@ -229,7 +229,7 @@ impl VM {
                     }
                 }
                 OpCode::Array => {
-                    let arg = self.u8_from_byte();
+                    let arg = self.u16_from_le();
                     let mut vals: Vec<Value> = Vec::new();
                     for _n in 0..arg {
                         vals.push(self.stack.pop()?);
