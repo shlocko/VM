@@ -11,7 +11,7 @@ pub enum OpCode {
     DivInt = 0x04, // -- divi
     Mod = 0x05,
 
-    // Memory/Stack Manipulation 0x10 - 0x25
+    // Memory/Stack Manipulation 0x10 - 0x2F
     PushConst = 0x10,     // u16 -- pshc <literal>
     PushLocal = 0x11,     // u16 -- pshl <ident>
     StoreLocal = 0x12,    // u16 -- strl <ident>
@@ -28,11 +28,20 @@ pub enum OpCode {
     ArrayPush = 0x1D,
     ArrayPop = 0x1E,
     ArrayLen = 0x1F,
+    Map = 0x20, // u16 -- map <int>
+    MapHas = 0x21,
+    MapKeys = 0x22,
+    MapDelete = 0x23,
+    IndexSet = 0x24,
+    IndexGet = 0x25,
+    Swap = 0x2D,
+    Dup = 0x2E,
+    PushNull = 0x2F,
 
-    // Control Flow 0x26 - 0x3F
-    Jump = 0x26,        // u32 -- jump <label>
-    JumpIfFalse = 0x27, // u32 -- jmpf <label>
-    JumpIfTrue = 0x28,  // u32 --
+    // Control Flow 0x30 - 0x3F
+    Jump = 0x30,        // u32 -- jump <label>
+    JumpIfFalse = 0x31, // u32 -- jmpf <label>
+    JumpIfTrue = 0x32,  // u32 --
 
     // Comparisons and other operators 0x40
     Equal = 0x40,        // -- equl
@@ -103,11 +112,21 @@ impl TryFrom<u8> for OpCode {
             0x1D => Ok(OpCode::ArrayPush),
             0x1E => Ok(OpCode::ArrayPop),
             0x1F => Ok(OpCode::ArrayLen),
+            0x20 => Ok(OpCode::Map),
+            0x21 => Ok(OpCode::MapHas),
+            0x22 => Ok(OpCode::MapKeys),
+            0x23 => Ok(OpCode::MapDelete),
+            0x24 => Ok(OpCode::IndexSet),
+            0x25 => Ok(OpCode::IndexGet),
+
+            0x2D => Ok(OpCode::Swap),
+            0x2E => Ok(OpCode::Dup),
+            0x2F => Ok(OpCode::PushNull),
 
             // Control Flow
-            0x26 => Ok(OpCode::Jump),
-            0x27 => Ok(OpCode::JumpIfFalse),
-            0x28 => Ok(OpCode::JumpIfTrue),
+            0x30 => Ok(OpCode::Jump),
+            0x31 => Ok(OpCode::JumpIfFalse),
+            0x32 => Ok(OpCode::JumpIfTrue),
 
             // Comparisons
             0x40 => Ok(OpCode::Equal),

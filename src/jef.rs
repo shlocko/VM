@@ -501,9 +501,9 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
             )));
         }
     }
-    println!("offsets {:?}", offsets);
+    // println!("offsets {:?}", offsets);
     for f in &mut bytecode.functions {
-        println!("{}", offsets[f.address]);
+        // println!("{}", offsets[f.address]);
         f.address = offsets[f.address] + f.address;
     }
     return Ok(bytecode);

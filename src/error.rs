@@ -15,6 +15,7 @@ pub enum VMError {
     InvalidGlobalIndex(u16),
     InvalidConstantIndex(u16),
     InvalidFunctionIndex(u16),
+    InvalidMapIndex(Value),
 
     // Opcode Errors
     InvalidOpcode(u8),
@@ -31,6 +32,9 @@ pub enum VMError {
     //Array Errors
     IndexOutsideRangeOfArray(usize, usize), // (index, size)
     CouldNotPopArray,
+
+    // Map Errors
+    ExpectedMap,
 }
 
 #[derive(Debug)]

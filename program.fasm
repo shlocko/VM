@@ -31,6 +31,7 @@ prnt
 pshc 1
 pshc 2
 callf add
+label test
 pshc 3
 callf addPlusOne
 prnt

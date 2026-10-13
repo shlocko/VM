@@ -19,6 +19,7 @@ pub enum Value {
     HeapValue(HeapValue),
     Function(usize),
     Array(HeapVec),
+    Map(HeapMap),
 }
 
 impl Value {
@@ -84,6 +85,39 @@ impl Value {
                 return Ok(Value::Int(unboxed.len() as i64));
             }
             _ => return Err(VMError::InvalidUnaryOperandType(arr)),
+        }
+    }
+
+    pub fn new_map(map: HashMap<String, Value>) -> Value {
+        return Value::Map(Rc::new(RefCell::new(map)));
+    }
+
+    pub fn map_has(map: Value, key: Value) -> bool {
+        match (map, key) {
+            (Value::Map(map), Value::String(s)) => {
+                if map.borrow().contains_key(s.as_ref()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            _ => {
+                todo!();
+            }
+        }
+    }
+
+    pub fn map_keys(map: Value) -> Result<Vec<Value>, VMError> {
+        match map {
+            Value::Map(map) => {
+                let keys: Vec<Value> = map
+                    .borrow()
+                    .keys()
+                    .map(|k| Value::String(Rc::new((*k).clone())))
+                    .collect();
+                return Ok(keys);
+            }
+            _ => Err(VMError::ExpectedMap),
         }
     }
 

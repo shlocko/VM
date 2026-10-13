@@ -195,6 +195,14 @@
       ]
     ],
     [
+      "Label",
+      [
+        {
+          "String": "test"
+        }
+      ]
+    ],
+    [
       "PushConst",
       [
         {

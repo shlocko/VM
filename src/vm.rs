@@ -1,9 +1,13 @@
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::rc::Rc;
+
 use crate::bytecode::Bytecode;
 use crate::error::VMError;
 use crate::function::Function;
 use crate::memory::Stack;
 use crate::opcode::OpCode;
-use crate::value::Value;
+use crate::value::{HeapMap, Value};
 
 pub struct VM {
     stack: Stack,
@@ -271,6 +275,54 @@ impl VM {
                     let arr = self.stack.pop()?;
                     self.stack.push(Value::array_len(arr)?)?;
                 }
+                OpCode::Map => {
+                    let arg = self.u16_from_le();
+                    let mut key_vals: HashMap<String, Value> = HashMap::new();
+                    for _n in 0..arg {
+                        let val = self.stack.pop()?;
+                        let key = self.stack.pop()?;
+                        match key {
+                            Value::String(s) => {
+                                key_vals.insert((*s).clone(), val);
+                            }
+                            _ => return Err(VMError::InvalidMapIndex(key)),
+                        }
+                    }
+                    self.stack.push(Value::new_map(key_vals))?;
+                }
+                OpCode::MapHas => {
+                    let key = self.stack.pop()?;
+                    let map = self.stack.pop()?;
+                    if Value::map_has(map, key) {
+                        self.stack.push(Value::Bool(true))?;
+                    } else {
+                        self.stack.push(Value::Bool(false))?;
+                    }
+                }
+                OpCode::MapKeys => {
+                    let map = self.stack.pop()?;
+                    let keys = Value::map_keys(map)?;
+                    let keys_as_value = Value::Array(Rc::new(RefCell::new(keys)));
+                    self.stack.push(keys_as_value)?;
+                }
+                OpCode::MapDelete => {
+                    todo!();
+                }
+                OpCode::IndexSet => {
+                    todo!();
+                }
+                OpCode::IndexGet => {
+                    todo!();
+                }
+                OpCode::Swap => {
+                    todo!();
+                }
+                OpCode::Dup => {
+                    todo!();
+                }
+                OpCode::PushNull => {
+                    todo!();
+                }
 
                 // Control Flow
                 OpCode::Jump => {
@@ -482,7 +534,7 @@ impl VM {
                     let func = self.functions[fidx as usize];
                     let mut args: Vec<Value> = Vec::new();
                     for _ in 0..func.arity {
-                        println!("Popped");
+                        // println!("Popped");
                         args.push(self.stack.pop()?);
                     }
                     args.reverse();
