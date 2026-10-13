@@ -23,20 +23,20 @@ pub enum OpCode {
     Unbox = 0x18,         //     -- unbox
     SetBox = 0x19,        //     -- setbox
     Array = 0x1A,         // u16 -- array <int>
-    ArraySet = 0x1B,
-    ArrayGet = 0x1C,
-    ArrayPush = 0x1D,
-    ArrayPop = 0x1E,
-    ArrayLen = 0x1F,
-    Map = 0x20, // u16 -- map <int>
-    MapHas = 0x21,
-    MapKeys = 0x22,
-    MapDelete = 0x23,
-    IndexSet = 0x24,
-    IndexGet = 0x25,
-    Swap = 0x2D,
-    Dup = 0x2E,
-    PushNull = 0x2F,
+    ArraySet = 0x1B,      //
+    ArrayGet = 0x1C,      //
+    ArrayPush = 0x1D,     //
+    ArrayPop = 0x1E,      //
+    ArrayLen = 0x1F,      //
+    Map = 0x20,           // u16 -- map <int>
+    MapHas = 0x21,        //
+    MapKeys = 0x22,       //     -- mkys
+    MapDelete = 0x23,     //
+    IndexSet = 0x24,      //
+    IndexGet = 0x25,      //
+    Swap = 0x2D,          //     -- swap
+    Dup = 0x2E,           //     -- dup
+    PushNull = 0x2F,      //     -- pushn
 
     // Control Flow 0x30 - 0x3F
     Jump = 0x30,        // u32 -- jump <label>

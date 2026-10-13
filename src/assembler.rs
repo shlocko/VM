@@ -387,6 +387,34 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 }
                 bin_vec.push(OpCode::MapKeys as u8);
             }
+
+            "swap" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::Swap as u8);
+            }
+            "dup" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::Dup as u8);
+            }
+            "pshn" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::PushNull as u8);
+            }
             // Control Flow
             "label" => {
                 if data.len() != 2 {

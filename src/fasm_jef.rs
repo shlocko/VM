@@ -372,6 +372,33 @@ pub fn assemble() -> Result<JEF, AssemblerError> {
                 }
                 bin_vec.push(new_jef("MapKeys", &[]));
             }
+            "swap" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(new_jef("Swap", &[]));
+            }
+            "dup" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(new_jef("Dup", &[]));
+            }
+            "pshn" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(new_jef("PushNull", &[]));
+            }
             // Control Flow
             "label" => {
                 if data.len() != 2 {

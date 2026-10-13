@@ -294,6 +294,18 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                 check_arg_count(&code, 0, code_idx)?;
                 bytecode.code.push(OpCode::MapKeys as u8);
             }
+            "Swap" => {
+                check_arg_count(&code, 0, code_idx)?;
+                bytecode.code.push(OpCode::Swap as u8);
+            }
+            "Dup" => {
+                check_arg_count(&code, 0, code_idx)?;
+                bytecode.code.push(OpCode::Dup as u8);
+            }
+            "PushNull" => {
+                check_arg_count(&code, 0, code_idx)?;
+                bytecode.code.push(OpCode::PushNull as u8);
+            }
 
             // Control Flow
             "Jump" => {

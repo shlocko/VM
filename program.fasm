@@ -43,4 +43,10 @@ map 2
 strg maptest
 pshg maptest
 mkys
+dup
+prnt
+prnt
+pshc 8
+pshc 9
+swap
 prnt

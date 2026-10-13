@@ -317,13 +317,18 @@ impl VM {
                     todo!();
                 }
                 OpCode::Swap => {
-                    todo!();
+                    let v1 = self.stack.pop()?;
+                    let v2 = self.stack.pop()?;
+                    self.stack.push(v1)?;
+                    self.stack.push(v2)?;
                 }
                 OpCode::Dup => {
-                    todo!();
+                    let val = self.stack.pop()?;
+                    self.stack.push(val.clone())?;
+                    self.stack.push(val.clone())?;
                 }
                 OpCode::PushNull => {
-                    todo!();
+                    self.stack.push(Value::NULL)?;
                 }
 
                 // Control Flow
