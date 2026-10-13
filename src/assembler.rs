@@ -352,6 +352,41 @@ pub fn assemble() -> Result<(usize, Vec<Value>, Vec<Function>, Vec<u8>), Assembl
                 }
                 bin_vec.push(OpCode::ArrayLen as u8);
             }
+            "map" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                let arg = parse_literal(data[1], linenum)?;
+                match arg {
+                    Value::Int(size) => {
+                        if size > 256 {
+                            return Err(AssemblerError::InvalidArgument(format!(
+                                "Expected map size <= 256 at line: {}",
+                                linenum
+                            )));
+                        }
+                        bin_vec.push(OpCode::Map as u8);
+                        bin_vec.push(size as u8);
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected numeric array size at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+            }
+            "mkys" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(OpCode::MapKeys as u8);
+            }
             // Control Flow
             "label" => {
                 if data.len() != 2 {

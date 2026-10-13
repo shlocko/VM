@@ -277,6 +277,23 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                 check_arg_count(&code, 0, code_idx)?;
                 bytecode.code.push(OpCode::ArrayLen as u8);
             }
+            "Map" => {
+                check_arg_count(&code, 1, code_idx)?;
+                bytecode.code.push(OpCode::Map as u8);
+                match code.1[0] {
+                    JEFValue::Int(num) => bytecode.code.push(num as u8),
+                    _ => {
+                        return Err(JEFError::InvalidArgument(format!(
+                            "Expected 8bit Integer at position: {}",
+                            code_idx
+                        )))
+                    }
+                }
+            }
+            "MapKeys" => {
+                check_arg_count(&code, 0, code_idx)?;
+                bytecode.code.push(OpCode::MapKeys as u8);
+            }
 
             // Control Flow
             "Jump" => {

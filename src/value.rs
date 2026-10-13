@@ -127,7 +127,8 @@ impl Value {
             Value::Float(v) => JEFValue::Float(v),
             Value::Bool(v) => JEFValue::Bool(v),
             Value::String(v) => JEFValue::String((*v).clone()),
-            _ => panic!(),
+            Value::Ident(v) => JEFValue::String(v.to_string()),
+            _ => panic!("{:?}", self),
         }
     }
 }

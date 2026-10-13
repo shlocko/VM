@@ -338,6 +338,40 @@ pub fn assemble() -> Result<JEF, AssemblerError> {
                 }
                 bin_vec.push(new_jef("ArrayLen", &[]));
             }
+            "map" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                let arg = parse_literal(data[1], linenum)?;
+                match arg {
+                    Value::Int(size) => {
+                        if size > 256 {
+                            return Err(AssemblerError::InvalidArgument(format!(
+                                "Expected map size <= 256 at line: {}",
+                                linenum
+                            )));
+                        }
+                        bin_vec.push(new_jef("Map", &[JEFValue::Int(size as i64)]));
+                    }
+                    _ => {
+                        return Err(AssemblerError::InvalidArgument(format!(
+                            "Expected numeric array size at line: {}",
+                            linenum
+                        )));
+                    }
+                }
+            }
+            "mkys" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(new_jef("MapKeys", &[]));
+            }
             // Control Flow
             "label" => {
                 if data.len() != 2 {

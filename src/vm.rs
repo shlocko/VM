@@ -276,9 +276,11 @@ impl VM {
                     self.stack.push(Value::array_len(arr)?)?;
                 }
                 OpCode::Map => {
-                    let arg = self.u16_from_le();
+                    let arg = self.u8_from_byte();
+                    // println!("{}", arg);
                     let mut key_vals: HashMap<String, Value> = HashMap::new();
                     for _n in 0..arg {
+                        // println!("Popping 2 for map");
                         let val = self.stack.pop()?;
                         let key = self.stack.pop()?;
                         match key {

@@ -7,13 +7,13 @@
       "Int": 8
     },
     {
-      "Int": 79
+      "String": "test"
+    },
+    {
+      "String": "test2"
     },
     {
       "Int": 2
-    },
-    {
-      "Int": 3
     }
   ],
   "functions": [
@@ -146,29 +146,9 @@
       "PushConst",
       [
         {
-          "Int": 0
-        }
-      ]
-    ],
-    [
-      "PushConst",
-      [
-        {
           "Int": 2
         }
       ]
-    ],
-    [
-      "CallFunction",
-      [
-        {
-          "Int": 2
-        }
-      ]
-    ],
-    [
-      "Print",
-      []
     ],
     [
       "PushConst",
@@ -187,22 +167,6 @@
       ]
     ],
     [
-      "CallFunction",
-      [
-        {
-          "Int": 1
-        }
-      ]
-    ],
-    [
-      "Label",
-      [
-        {
-          "String": "test"
-        }
-      ]
-    ],
-    [
       "PushConst",
       [
         {
@@ -211,12 +175,32 @@
       ]
     ],
     [
-      "CallFunction",
+      "Map",
+      [
+        {
+          "Int": 2
+        }
+      ]
+    ],
+    [
+      "StoreGlobal",
       [
         {
           "Int": 0
         }
       ]
+    ],
+    [
+      "PushGlobal",
+      [
+        {
+          "Int": 0
+        }
+      ]
+    ],
+    [
+      "MapKeys",
+      []
     ],
     [
       "Print",
