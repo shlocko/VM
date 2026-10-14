@@ -390,15 +390,6 @@ pub fn assemble() -> Result<JEF, AssemblerError> {
                 }
                 bin_vec.push(new_jef("Dup", &[]));
             }
-            "pshn" => {
-                if data.len() > 1 {
-                    return Err(AssemblerError::InvalidArgument(format!(
-                        "Expected zero arguments at line: {}",
-                        linenum
-                    )));
-                }
-                bin_vec.push(new_jef("PushNull", &[]));
-            }
             // Control Flow
             "label" => {
                 if data.len() != 2 {
@@ -703,6 +694,9 @@ fn parse_literal(s: &str, line: i32) -> Result<Value, AssemblerError> {
     }
     if arg == "true" || arg == "false" {
         return Ok(Value::Bool(arg.parse().unwrap()));
+    }
+    if arg == "null" {
+        return Ok(Value::NULL);
     }
     if arg.contains('.') {
         return arg.parse::<f64>().map(|x| Value::Float(x)).map_err(|_| {

@@ -35,6 +35,9 @@ pub enum VMError {
 
     // Map Errors
     ExpectedMap,
+
+    // Call Errors
+    InvalidFunctionCallArity(usize, usize), // (Expected, Received)
 }
 
 #[derive(Debug)]

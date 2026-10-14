@@ -17,7 +17,7 @@ pub enum Value {
     Bool(bool),
     Ident(String),
     HeapValue(HeapValue),
-    Function(usize),
+    Function(usize, Vec<Value>),
     Array(HeapVec),
     Map(HeapMap),
 }
@@ -128,6 +128,7 @@ impl Value {
             Value::Bool(v) => JEFValue::Bool(v),
             Value::String(v) => JEFValue::String((*v).clone()),
             Value::Ident(v) => JEFValue::String(v.to_string()),
+            Value::NULL => JEFValue::NULL,
             _ => panic!("{:?}", self),
         }
     }

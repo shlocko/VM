@@ -36,7 +36,6 @@ pub enum OpCode {
     IndexGet = 0x25,      //
     Swap = 0x2D,          //     -- swap
     Dup = 0x2E,           //     -- dup
-    PushNull = 0x2F,      //     -- pushn
 
     // Control Flow 0x30 - 0x3F
     Jump = 0x30,        // u32 -- jump <label>
@@ -57,6 +56,9 @@ pub enum OpCode {
     // Functions
     CallFunction = 0x61, //  u16(func id) -- call <ident>
     Return = 0x62,
+    CallFromStack = 0x63,
+    CallExternal = 0x64,
+    PushFunctionPointer = 0x65,
 
     // Testing ops
     Print = 0xF5, // prnt
@@ -121,7 +123,6 @@ impl TryFrom<u8> for OpCode {
 
             0x2D => Ok(OpCode::Swap),
             0x2E => Ok(OpCode::Dup),
-            0x2F => Ok(OpCode::PushNull),
 
             // Control Flow
             0x30 => Ok(OpCode::Jump),
@@ -142,6 +143,9 @@ impl TryFrom<u8> for OpCode {
             // Functions
             0x61 => Ok(OpCode::CallFunction),
             0x62 => Ok(OpCode::Return),
+            0x63 => Ok(OpCode::CallFromStack),
+            0x64 => Ok(OpCode::CallExternal),
+            0x65 => Ok(OpCode::PushFunctionPointer),
 
             // Testing
             0xF5 => Ok(OpCode::Print),
@@ -153,9 +157,9 @@ impl TryFrom<u8> for OpCode {
 pub fn op_to_arg_size(op: &str) -> usize {
     match op {
         "Jump" | "JumpIfFalse" | "JumpIfTrue" => 4,
-        "PushConst" | "PushImmediate" | "PushGlobal" | "StoreGlobal" | "Array" | "CallFunction" => {
-            2
-        }
+        "PushFunctionPointer" => 3,
+        "PushConst" | "PushImmediate" | "PushGlobal" | "StoreGlobal" | "Array" | "CallFunction"
+        | "Map" => 2,
         "StoreLocal" | "PushLocal" => 1,
         _ => 0,
     }

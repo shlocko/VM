@@ -16,6 +16,7 @@ pub enum JEFValue {
     Float(f64),
     String(String),
     Bool(bool),
+    NULL,
 }
 
 impl JEFValue {
@@ -25,6 +26,7 @@ impl JEFValue {
             JEFValue::Float(v) => Value::Float(v),
             JEFValue::String(v) => Value::String(HeapString::new(v)),
             JEFValue::Bool(v) => Value::Bool(v),
+            JEFValue::NULL => Value::NULL,
         }
     }
 }
@@ -87,6 +89,7 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
             JEFValue::Float(v) => Value::Float(v),
             JEFValue::Bool(v) => Value::Bool(v),
             JEFValue::String(v) => Value::String(HeapString::new(v)),
+            JEFValue::NULL => Value::NULL,
         };
         bytecode.consts.push(value);
     }
@@ -301,10 +304,6 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
             "Dup" => {
                 check_arg_count(&code, 0, code_idx)?;
                 bytecode.code.push(OpCode::Dup as u8);
-            }
-            "PushNull" => {
-                check_arg_count(&code, 0, code_idx)?;
-                bytecode.code.push(OpCode::PushNull as u8);
             }
 
             // Control Flow

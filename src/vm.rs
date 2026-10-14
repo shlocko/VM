@@ -7,7 +7,7 @@ use crate::error::VMError;
 use crate::function::Function;
 use crate::memory::Stack;
 use crate::opcode::OpCode;
-use crate::value::{HeapMap, Value};
+use crate::value::Value;
 
 pub struct VM {
     stack: Stack,
@@ -327,9 +327,6 @@ impl VM {
                     self.stack.push(val.clone())?;
                     self.stack.push(val.clone())?;
                 }
-                OpCode::PushNull => {
-                    self.stack.push(Value::NULL)?;
-                }
 
                 // Control Flow
                 OpCode::Jump => {
@@ -558,6 +555,49 @@ impl VM {
                         self.ip = self.stack.pop_frame()?;
                         self.stack.push(ret_val)?;
                     }
+                }
+                OpCode::CallFromStack => {
+                    let fptr = self.stack.pop()?;
+                    match fptr {
+                        Value::Function(fidx, args) => {
+                            let func = self.functions[fidx as usize];
+                            let mut args: Vec<Value> = args;
+                            let arity = func.arity;
+                            if args.len() < arity as usize {
+                                return Err(VMError::InvalidFunctionCallArity(
+                                    arity as usize,
+                                    args.len(),
+                                ));
+                            }
+                            let mut popped_args: Vec<Value> = Vec::new();
+                            for _ in 0..(arity as usize - args.len()) {
+                                popped_args.push(self.stack.pop()?);
+                            }
+                            popped_args.reverse();
+                            args.append(&mut popped_args);
+                            self.stack.push_frame(args, func.locals as usize, self.ip)?;
+                            self.ip = func.address;
+                        }
+                        _ => {
+                            return Err(VMError::InvalidStackValueType(
+                                Value::Function(0, Vec::new()),
+                                fptr,
+                            ))
+                        }
+                    }
+                }
+                OpCode::PushFunctionPointer => {
+                    let fidx = self.u16_from_le();
+                    let arg_count = self.u8_from_byte();
+                    let mut args: Vec<Value> = Vec::new();
+                    for _ in 0..arg_count {
+                        args.push(self.stack.pop()?);
+                    }
+                    args.reverse();
+                    self.stack.push(Value::Function(fidx as usize, args))?;
+                }
+                OpCode::CallExternal => {
+                    todo!();
                 }
 
                 // Testing ops

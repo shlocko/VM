@@ -50,3 +50,5 @@ pshc 8
 pshc 9
 swap
 prnt
+pshc null
+prnt
