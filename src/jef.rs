@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs};
 
 use crate::{
     bytecode::Bytecode,
-    error::JEFError,
+    error::{JEFError, VMError},
     function::Function,
     opcode::{op_to_arg_size, OpCode},
     value::{HeapString, Value},
@@ -464,6 +464,23 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
             "Return" => {
                 check_arg_count(&code, 0, code_idx)?;
                 bytecode.code.push(OpCode::Return as u8);
+            }
+            "CallExternal" => {
+                check_arg_count(&code, 1, code_idx)?;
+                match code.1[0] {
+                    JEFValue::Int(idx) => {
+                        bytecode.code.push(OpCode::CallExternal as u8);
+                        let arg = u16::to_le_bytes(idx as u16);
+                        bytecode.code.push(arg[0]);
+                        bytecode.code.push(arg[1]);
+                    }
+                    _ => {
+                        return Err(JEFError::InvalidArgument(format!(
+                            "Expected 16bit Integer at position: {}",
+                            code_idx
+                        )))
+                    }
+                }
             }
 
             // Testing ops?

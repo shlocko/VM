@@ -18,7 +18,13 @@
     {
       "Int": 9
     },
-    "NULL"
+    "NULL",
+    {
+      "String": "string"
+    },
+    {
+      "String": "vm::string::concat"
+    }
   ],
   "functions": [
     {
@@ -247,6 +253,34 @@
       [
         {
           "Int": 6
+        }
+      ]
+    ],
+    [
+      "Print",
+      []
+    ],
+    [
+      "PushConst",
+      [
+        {
+          "Int": 2
+        }
+      ]
+    ],
+    [
+      "PushConst",
+      [
+        {
+          "Int": 7
+        }
+      ]
+    ],
+    [
+      "CallExternal",
+      [
+        {
+          "Int": 8
         }
       ]
     ],

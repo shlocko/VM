@@ -645,6 +645,31 @@ pub fn assemble() -> Result<JEF, AssemblerError> {
                     }
                 }
             }
+            "calle" => {
+                if data.len() != 2 {
+                    return Err(AssemblerError::InvalidArgument(
+                        "Expected one argument".to_string(),
+                    ));
+                }
+                let arg = parse_literal(data[1], linenum);
+                let idx: u16;
+                match arg {
+                    Ok(val) => {
+                        let index = consts.iter().position(|x| *x == val.clone().to_jef());
+                        match index {
+                            Some(val) => {
+                                idx = val as u16;
+                            }
+                            None => {
+                                consts.push(val.clone().to_jef());
+                                idx = (consts.len() - 1) as u16;
+                            }
+                        }
+                    }
+                    Err(e) => return Err(e),
+                }
+                bin_vec.push(new_jef("CallExternal", &[JEFValue::Int(idx.into())]))
+            }
 
             // Other
             "prnt" => {

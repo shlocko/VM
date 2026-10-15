@@ -158,9 +158,9 @@ pub fn op_to_arg_size(op: &str) -> usize {
     match op {
         "Jump" | "JumpIfFalse" | "JumpIfTrue" => 4,
         "PushFunctionPointer" => 3,
-        "PushConst" | "PushImmediate" | "PushGlobal" | "StoreGlobal" | "Array" | "CallFunction"
-        | "Map" => 2,
-        "StoreLocal" | "PushLocal" => 1,
+        "PushConst" | "PushGlobal" | "StoreGlobal" | "Array" | "CallFunction" | "Map"
+        | "CallExternal" => 2,
+        "StoreLocal" | "PushLocal" | "PushImmediate" => 1,
         _ => 0,
     }
 }

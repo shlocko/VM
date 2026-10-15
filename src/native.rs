@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc, sync::LazyLock};
 
-use crate::{error::VMError, vm::VM};
+use crate::{error::VMError, value::Value, vm::VM};
 
-pub type NativeFunction = Box<dyn Fn(&mut VM) -> Result<(), VMError>>;
+pub type NativeFunction = fn(&mut VM) -> Result<(), VMError>;
 pub enum RegistryEntry {
     Function(NativeFunction),
     Namespace(HashMap<String, RegistryEntry>),
@@ -33,3 +33,35 @@ impl NativeRegistry {
         }
     }
 }
+pub static REGISTRY: LazyLock<NativeRegistry> = LazyLock::new(|| {
+    let mut registry: NativeRegistry = NativeRegistry(HashMap::new());
+
+    let mut vm_map: HashMap<String, RegistryEntry> = HashMap::new();
+    let mut vm_string_map: HashMap<String, RegistryEntry> = HashMap::new();
+    vm_string_map.insert(
+        "concat".into(),
+        RegistryEntry::Function(|vm: &mut VM| -> Result<(), VMError> {
+            let s1 = vm.stack.pop()?;
+            let s2 = vm.stack.pop()?;
+            match (&s1, &s2) {
+                (Value::String(str1), Value::String(str2)) => {
+                    let s_concat = (**str1).clone() + (**str2).as_str();
+                    vm.stack.push(Value::String(Rc::new(s_concat)))?;
+                    Ok(())
+                }
+                _ => {
+                    return Err(VMError::InvalidOperandType(
+                        Value::String(Rc::new("".to_string())),
+                        s1,
+                    ))
+                }
+            }
+        }),
+    );
+    vm_map.insert("string".into(), RegistryEntry::Namespace(vm_string_map));
+    registry
+        .0
+        .insert("vm".into(), RegistryEntry::Namespace(vm_map));
+
+    registry
+});

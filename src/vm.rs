@@ -6,36 +6,48 @@ use crate::bytecode::Bytecode;
 use crate::error::VMError;
 use crate::function::Function;
 use crate::memory::Stack;
-use crate::native::{self, NativeRegistry, RegistryEntry};
+use crate::native::{self, NativeRegistry, RegistryEntry, REGISTRY};
 use crate::opcode::OpCode;
 use crate::value::Value;
 
 pub struct VM {
-    stack: Stack,
+    pub stack: Stack,
     consts: Vec<Value>,
     globals: Vec<Value>,
     functions: Vec<Function>,
     code: Vec<u8>,
     ip: usize,
-    registry: NativeRegistry,
 }
 
 impl VM {
-    fn initialize_native_registry(registries: Vec<NativeRegistry>) -> NativeRegistry {
-        let registry = NativeRegistry(HashMap::new());
-        let mut vm_map: HashMap<String, RegistryEntry> = HashMap::new();
-        let mut vm_string_map: HashMap<String, RegistryEntry> = HashMap::new();
-        vm_string_map.insert(
-            "concat".into(),
-            RegistryEntry::Function(Box::new(move |vm: &mut VM| -> Result<(), VMError> {
-                let s1 = vm.stack.pop()?;
+    // fn initialize_native_registry(registries: Vec<NativeRegistry>) -> NativeRegistry {
+    //     let registry = NativeRegistry(HashMap::new());
+    //     let mut vm_map: HashMap<String, RegistryEntry> = HashMap::new();
+    //     let mut vm_string_map: HashMap<String, RegistryEntry> = HashMap::new();
+    //     vm_string_map.insert(
+    //         "concat".into(),
+    //         RegistryEntry::Function(Box::new(move |vm: &mut VM| -> Result<(), VMError> {
+    //             let s1 = vm.stack.pop()?;
+    //             let s2 = vm.stack.pop()?;
+    //             match (&s1, &s2) {
+    //                 (Value::String(str1), Value::String(str2)) => {
+    //                     let s_concat = (**str1).clone() + (**str2).as_str();
+    //                     vm.stack.push(Value::String(Rc::new(s_concat)))?;
+    //                 }
+    //                 _ => {
+    //                     return Err(VMError::InvalidOperandType(
+    //                         Value::String(Rc::new("".to_string())),
+    //                         s1,
+    //                     ))
+    //                 }
+    //             }
 
-                todo!();
-            })),
-        );
-        vm_map.insert("string".into(), RegistryEntry::Namespace(vm_string_map));
-        return registry;
-    }
+    //             todo!();
+    //         })),
+    //     );
+    //     vm_map.insert("string".into(), RegistryEntry::Namespace(vm_string_map));
+    //     return registry;
+    // }
 
     fn u32_from_le(&mut self) -> u32 {
         let val = u32::from_le_bytes([
@@ -77,7 +89,6 @@ impl VM {
             functions: Vec::new(),
             code: Vec::new(),
             ip: 0,
-            registry: VM::initialize_native_registry(Vec::new()),
         }
     }
     pub fn load_code(&mut self, bytecode: Bytecode) {
@@ -616,7 +627,19 @@ impl VM {
                     self.stack.push(Value::Function(fidx as usize, args))?;
                 }
                 OpCode::CallExternal => {
-                    todo!();
+                    let cidx = self.u16_from_le();
+                    let fname = self.consts[cidx as usize].clone();
+                    match fname {
+                        Value::String(path) => {
+                            REGISTRY.call((*path).clone(), self)?;
+                        }
+                        _ => {
+                            return Err(VMError::InvalidOperandType(
+                                Value::String(Rc::new("".into())),
+                                fname,
+                            ))
+                        }
+                    }
                 }
 
                 // Testing ops
