@@ -5,6 +5,7 @@ pub mod fasm_jef;
 pub mod function;
 pub mod jef;
 pub mod memory;
+pub mod native;
 pub mod opcode;
 pub mod utils;
 pub mod value;

@@ -6,6 +6,7 @@ use crate::bytecode::Bytecode;
 use crate::error::VMError;
 use crate::function::Function;
 use crate::memory::Stack;
+use crate::native::{self, NativeRegistry, RegistryEntry};
 use crate::opcode::OpCode;
 use crate::value::Value;
 
@@ -16,9 +17,26 @@ pub struct VM {
     functions: Vec<Function>,
     code: Vec<u8>,
     ip: usize,
+    registry: NativeRegistry,
 }
 
 impl VM {
+    fn initialize_native_registry(registries: Vec<NativeRegistry>) -> NativeRegistry {
+        let registry = NativeRegistry(HashMap::new());
+        let mut vm_map: HashMap<String, RegistryEntry> = HashMap::new();
+        let mut vm_string_map: HashMap<String, RegistryEntry> = HashMap::new();
+        vm_string_map.insert(
+            "concat".into(),
+            RegistryEntry::Function(Box::new(move |vm: &mut VM| -> Result<(), VMError> {
+                let s1 = vm.stack.pop()?;
+
+                todo!();
+            })),
+        );
+        vm_map.insert("string".into(), RegistryEntry::Namespace(vm_string_map));
+        return registry;
+    }
+
     fn u32_from_le(&mut self) -> u32 {
         let val = u32::from_le_bytes([
             self.code[self.ip + 1],
@@ -59,6 +77,7 @@ impl VM {
             functions: Vec::new(),
             code: Vec::new(),
             ip: 0,
+            registry: VM::initialize_native_registry(Vec::new()),
         }
     }
     pub fn load_code(&mut self, bytecode: Bytecode) {
