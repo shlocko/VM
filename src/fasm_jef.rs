@@ -363,6 +363,15 @@ pub fn assemble() -> Result<JEF, AssemblerError> {
                     }
                 }
             }
+            "mphs" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(new_jef("MapHas", &[]));
+            }
             "mkys" => {
                 if data.len() > 1 {
                     return Err(AssemblerError::InvalidArgument(format!(
@@ -371,6 +380,33 @@ pub fn assemble() -> Result<JEF, AssemblerError> {
                     )));
                 }
                 bin_vec.push(new_jef("MapKeys", &[]));
+            }
+            "mpdl" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(new_jef("MapDelete", &[]));
+            }
+            "idxs" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(new_jef("IndexSet", &[]));
+            }
+            "idxg" => {
+                if data.len() > 1 {
+                    return Err(AssemblerError::InvalidArgument(format!(
+                        "Expected zero arguments at line: {}",
+                        linenum
+                    )));
+                }
+                bin_vec.push(new_jef("IndexGet", &[]));
             }
             "swap" => {
                 if data.len() > 1 {

@@ -297,6 +297,19 @@ pub fn assemble_json(file_name: &str) -> Result<Bytecode, JEFError> {
                 check_arg_count(&code, 0, code_idx)?;
                 bytecode.code.push(OpCode::MapKeys as u8);
             }
+            "MapDelete" => {
+                check_arg_count(&code, 0, code_idx)?;
+                bytecode.code.push(OpCode::MapDelete as u8);
+            }
+            "IndexSet" => {
+                check_arg_count(&code, 0, code_idx)?;
+                bytecode.code.push(OpCode::IndexSet as u8);
+            }
+            "IndexGet" => {
+                check_arg_count(&code, 0, code_idx)?;
+                bytecode.code.push(OpCode::IndexGet as u8);
+            }
+
             "Swap" => {
                 check_arg_count(&code, 0, code_idx)?;
                 bytecode.code.push(OpCode::Swap as u8);

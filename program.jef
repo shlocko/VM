@@ -7,29 +7,16 @@
       "Int": 8
     },
     {
-      "String": "test"
+      "String": "one"
     },
     {
-      "String": "test2"
+      "String": "two"
     },
     {
       "Int": 2
     },
     {
-      "Int": 9
-    },
-    {
-      "String": "vm::io::println"
-    },
-    "NULL",
-    {
-      "String": "string"
-    },
-    {
-      "String": "vm::string::concat"
-    },
-    {
-      "String": "vm::string::char_at"
+      "Int": 5
     }
   ],
   "functions": [
@@ -215,15 +202,23 @@
       ]
     ],
     [
-      "MapKeys",
-      []
-    ],
-    [
       "Dup",
       []
     ],
     [
       "Print",
+      []
+    ],
+    [
+      "PushConst",
+      [
+        {
+          "Int": 2
+        }
+      ]
+    ],
+    [
+      "IndexGet",
       []
     ],
     [
@@ -239,14 +234,10 @@
       ]
     ],
     [
-      "Print",
-      []
-    ],
-    [
       "PushConst",
       [
         {
-          "Int": 1
+          "Int": 2
         }
       ]
     ],
@@ -259,32 +250,28 @@
       ]
     ],
     [
-      "Swap",
+      "IndexSet",
       []
     ],
     [
-      "CallExternal",
+      "Print",
+      []
+    ],
+    [
+      "PushGlobal",
       [
         {
-          "Int": 6
+          "Int": 0
         }
       ]
     ],
     [
-      "PushConst",
-      [
-        {
-          "Int": 7
-        }
-      ]
+      "Dup",
+      []
     ],
     [
-      "CallExternal",
-      [
-        {
-          "Int": 6
-        }
-      ]
+      "Print",
+      []
     ],
     [
       "PushConst",
@@ -295,44 +282,12 @@
       ]
     ],
     [
-      "PushConst",
-      [
-        {
-          "Int": 8
-        }
-      ]
+      "IndexGet",
+      []
     ],
     [
-      "CallExternal",
-      [
-        {
-          "Int": 9
-        }
-      ]
-    ],
-    [
-      "PushConst",
-      [
-        {
-          "Int": 4
-        }
-      ]
-    ],
-    [
-      "CallExternal",
-      [
-        {
-          "Int": 10
-        }
-      ]
-    ],
-    [
-      "CallExternal",
-      [
-        {
-          "Int": 6
-        }
-      ]
+      "Print",
+      []
     ]
   ]
 }

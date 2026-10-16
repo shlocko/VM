@@ -122,6 +122,94 @@ impl Value {
         }
     }
 
+    pub fn map_delete(map: Value, key: Value) -> Result<bool, VMError> {
+        match map {
+            Value::Map(map) => match key {
+                Value::String(key) => {
+                    let val = map.borrow_mut().remove(key.as_str());
+                    match val {
+                        Some(_) => {
+                            return Ok(true);
+                        }
+                        None => return Ok(false),
+                    }
+                }
+                _ => {
+                    return Err(VMError::InvalidStackValueType(
+                        Value::String(Rc::new(String::new())),
+                        key,
+                    ))
+                }
+            },
+            _ => {
+                return Err(VMError::InvalidStackValueType(
+                    Value::Map(Rc::new(RefCell::new(HashMap::new()))),
+                    map,
+                ))
+            }
+        }
+    }
+
+    pub fn index_set(data: Value, key: Value, val: Value) -> Result<bool, VMError> {
+        match data {
+            Value::Map(map) => match key {
+                Value::String(key) => {
+                    let res = map.borrow_mut().insert((*key).clone(), val);
+                    match res {
+                        Some(_) => Ok(true),
+                        None => Ok(false),
+                    }
+                }
+                _ => {
+                    return Err(VMError::InvalidStackValueType(
+                        Value::String(Rc::new(String::new())),
+                        key,
+                    ))
+                }
+            },
+            Value::Array(arr) => match key {
+                Value::Int(idx) => {
+                    arr.borrow_mut().insert(idx as usize, val);
+                    Ok(true)
+                }
+                _ => return Err(VMError::InvalidStackValueType(Value::Int(0), key)),
+            },
+            _ => todo!("Bad type for index_set not implemented"),
+        }
+    }
+    pub fn index_get(data: Value, key: Value) -> Result<Value, VMError> {
+        match data {
+            Value::Map(map) => match key {
+                Value::String(key) => {
+                    let map = map.borrow();
+                    let res = map.get((*key).as_str());
+                    match res {
+                        Some(val) => Ok((*val).clone()),
+                        None => Ok(Value::NULL),
+                    }
+                }
+                _ => {
+                    return Err(VMError::InvalidStackValueType(
+                        Value::String(Rc::new(String::new())),
+                        key,
+                    ))
+                }
+            },
+            Value::Array(arr) => match key {
+                Value::Int(idx) => {
+                    let arr = arr.borrow();
+                    let res = arr.get(idx as usize);
+                    match res {
+                        Some(val) => Ok((*val).clone()),
+                        None => Ok(Value::NULL),
+                    }
+                }
+                _ => return Err(VMError::InvalidStackValueType(Value::Int(0), key)),
+            },
+            _ => todo!("Bad type for index_get not implemented"),
+        }
+    }
+
     pub fn to_jef(self) -> JEFValue {
         match self {
             Value::Int(v) => JEFValue::Int(v),

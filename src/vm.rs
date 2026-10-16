@@ -338,13 +338,23 @@ impl VM {
                     self.stack.push(keys_as_value)?;
                 }
                 OpCode::MapDelete => {
-                    todo!();
+                    let key = self.stack.pop()?;
+                    let map = self.stack.pop()?;
+                    let res = Value::map_delete(map, key)?;
+                    self.stack.push(Value::Bool(res))?;
                 }
                 OpCode::IndexSet => {
-                    todo!();
+                    let val = self.stack.pop()?;
+                    let key = self.stack.pop()?;
+                    let data = self.stack.pop()?;
+                    let res = Value::index_set(data, key, val)?;
+                    self.stack.push(Value::Bool(res))?;
                 }
                 OpCode::IndexGet => {
-                    todo!();
+                    let key = self.stack.pop()?;
+                    let data = self.stack.pop()?;
+                    let res = Value::index_get(data, key)?;
+                    self.stack.push(res)?;
                 }
                 OpCode::Swap => {
                     let v1 = self.stack.pop()?;

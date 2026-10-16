@@ -23,30 +23,55 @@ endf
 
 main
 
-pshc "test"
+# pshc "test"
+# pshc 1
+# pshc "test2"
+# pshc 2
+# map 2
+# strg maptest
+# pshg maptest
+# mkys
+# dup
+# prnt
+# prnt
+# pshg maptest
+# prnt
+# pshc 8
+# pshc 9
+# swap
+# calle "vm::io::println"
+# pshc null
+# calle "vm::io::println"
+
+
+# pshc "test"
+# pshc "string"
+# calle "vm::string::concat"
+# pshc 2
+# calle "vm::string::char_at"
+# calle "vm::io::println"
+
+
+pshc "one"
 pshc 1
-pshc "test2"
+pshc "two"
 pshc 2
 map 2
-strg maptest
-pshg maptest
-mkys
+strg map1
+pshg map1
 dup
 prnt
+pshc "one"
+idxg
 prnt
-pshg maptest
+pshg map1
+pshc "one"
+pshc 5
+idxs
 prnt
-pshc 8
-pshc 9
-swap
-calle "vm::io::println"
-pshc null
-calle "vm::io::println"
-
-
-pshc "test"
-pshc "string"
-calle "vm::string::concat"
-pshc 2
-calle "vm::string::char_at"
-calle "vm::io::println"
+pshg map1
+dup
+prnt
+pshc "one"
+idxg
+prnt
