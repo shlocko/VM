@@ -38,6 +38,7 @@ pub enum VMError {
 
     // Call Errors
     InvalidFunctionCallArity(usize, usize), // (Expected, Received)
+    InvalidNativeFunctionName(String),
 }
 
 #[derive(Debug)]

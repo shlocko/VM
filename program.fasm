@@ -23,21 +23,9 @@ endf
 
 main
 
-
-# pshc 1
-# pshc 79
-# callf test
-# prnt
-# pshc 1
-# pshc 2
-# callf add
-# label test
-# pshc 3
-# callf addPlusOne
-# prnt
-pshc test
+pshc "test"
 pshc 1
-pshc test2
+pshc "test2"
 pshc 2
 map 2
 strg maptest
@@ -46,15 +34,19 @@ mkys
 dup
 prnt
 prnt
+pshg maptest
+prnt
 pshc 8
 pshc 9
 swap
-prnt
+calle "vm::io::println"
 pshc null
-prnt
+calle "vm::io::println"
 
 
 pshc "test"
 pshc "string"
 calle "vm::string::concat"
+pshc 2
+calle "vm::string::char_at"
 calle "vm::io::println"

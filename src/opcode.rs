@@ -54,11 +54,11 @@ pub enum OpCode {
     LogicalOr = 0x48,    // -- lgor
 
     // Functions
-    CallFunction = 0x61, //  u16(func id) -- call <ident>
-    Return = 0x62,
-    CallFromStack = 0x63,
-    CallExternal = 0x64,
-    PushFunctionPointer = 0x65,
+    CallFunction = 0x61,        //  u16(func id) -- callf <ident>
+    Return = 0x62,              //
+    CallFromStack = 0x63,       //
+    CallExternal = 0x64,        // u16(const pool id) -- calle <path> -- calle "vm::string::concat"
+    PushFunctionPointer = 0x65, //
 
     // Testing ops
     Print = 0xF5, // prnt

@@ -14,6 +14,7 @@ pub enum Value {
     Int(i64),
     Float(f64),
     String(HeapString),
+    Char(char),
     Bool(bool),
     Ident(String),
     HeapValue(HeapValue),
