@@ -37,7 +37,12 @@ pub static REGISTRY: LazyLock<NativeRegistry> = LazyLock::new(|| {
     let mut registry: NativeRegistry = NativeRegistry(HashMap::new());
 
     let mut vm_map: HashMap<String, RegistryEntry> = HashMap::new();
+
+    //
+    // String Namespace
+    //
     let mut vm_string_map: HashMap<String, RegistryEntry> = HashMap::new();
+    // String Concat
     vm_string_map.insert(
         "concat".into(),
         RegistryEntry::Function(|vm: &mut VM| -> Result<(), VMError> {
@@ -59,6 +64,33 @@ pub static REGISTRY: LazyLock<NativeRegistry> = LazyLock::new(|| {
         }),
     );
     vm_map.insert("string".into(), RegistryEntry::Namespace(vm_string_map));
+
+    //
+    // IO Namespace
+    //
+    let mut vm_io_map: HashMap<String, RegistryEntry> = HashMap::new();
+    // IO println
+    vm_io_map.insert(
+        "println".into(),
+        RegistryEntry::Function(|vm: &mut VM| -> Result<(), VMError> {
+            let val = vm.stack.pop()?;
+            match val {
+                Value::NULL => println!("NULL"),
+                Value::Int(n) => println!("{}", n),
+                Value::Float(n) => println!("{}", n),
+                Value::String(s) => println!("{}", s),
+                Value::Bool(b) => println!("{}", b),
+                Value::Ident(i) => println!("{}", i),
+                Value::Function(_, _) => println!("Function"),
+                Value::HeapValue(v) => println!("{:?}", (*v).borrow()),
+                Value::Array(_) => println!("Array"),
+                Value::Map(_) => println!("Map"),
+            }
+            Ok(())
+        }),
+    );
+    vm_map.insert("io".into(), RegistryEntry::Namespace(vm_io_map));
+
     registry
         .0
         .insert("vm".into(), RegistryEntry::Namespace(vm_map));

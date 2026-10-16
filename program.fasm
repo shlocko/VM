@@ -57,4 +57,4 @@ prnt
 pshc "test"
 pshc "string"
 calle "vm::string::concat"
-prnt
+calle "vm::io::println"

@@ -24,6 +24,9 @@
     },
     {
       "String": "vm::string::concat"
+    },
+    {
+      "String": "vm::io::println"
     }
   ],
   "functions": [
@@ -285,8 +288,12 @@
       ]
     ],
     [
-      "Print",
-      []
+      "CallExternal",
+      [
+        {
+          "Int": 9
+        }
+      ]
     ]
   ]
 }
